@@ -31,6 +31,9 @@ class GameLogic(val randomGen: RandomGenerator) {
 
   def getBlockCells(): Seq[Point] = currentBlock.l
 
+  def checkPlacement(centerPoint: Point): Unit = {
+    println(centerPoint)
+  }
 
 }
 

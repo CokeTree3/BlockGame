@@ -14,8 +14,6 @@ import tetris.logic._
 import tetris.game.GameMain._
 import tetris.logic.{Point => GridCoordinate}
 
-import java.awt.AWTEvent.RESERVED_ID_MAX
-
 class GameMain extends GameBase {
 
 
@@ -55,10 +53,7 @@ class GameMain extends GameBase {
   def drawGameField(): Unit = {
     setBackground(Color.DarkCyan)
 
-
-    for (p <- gridDims.allPointsInside) {
-      drawCell(getCell(p), p.cellFilled)
-    }
+    gridDims.allPointsInside.foreach(p => drawCell(getCell(p), p.cellFilled))
 
     for (i <- 0 to gridDims.width / 3) {
       drawLine(Coordinate((gameField.widthThirds(i)) + gameField.left, gameField.top), Coordinate(gameField.widthThirds(i) + gameField.left, gameField.bottom))
@@ -67,7 +62,7 @@ class GameMain extends GameBase {
       drawLine(Coordinate(gameField.left, gameField.heightThirds(i) + gameField.top), Coordinate(gameField.right, gameField.heightThirds(i) + gameField.top))
     }
 
-    if (mouseActive) drawMovableBlock(Coordinate(mouseX.toFloat, mouseY.toFloat))
+    if(mouseActive)drawMovableBlock(Coordinate(mouseX.toFloat, mouseY.toFloat))
     else drawMovableBlock()
 
     def getCell(p: GridCoordinate): Rectangle = {
@@ -103,16 +98,21 @@ class GameMain extends GameBase {
       case VK_P => dispMainMenu = true
       case _ => ()
     }
-
   }
 
-  override def mouseDragged(event: MouseEvent): Unit = mouseActive = true
+  override def mouseDragged(event: MouseEvent): Unit = {
+    if(getBlockArea().exists(cell => cell.contains(Coordinate(mouseX.toFloat, mouseY.toFloat)))) mouseActive = true
+  }
 
-  override def mouseReleased(): Unit = mouseActive = false
+  override def mouseReleased(): Unit = {
+    mouseActive = false
+    val mousePoint = Coordinate(mouseX.toFloat, mouseY.toFloat)
+
+    if(gameField.contains(mousePoint)) gameLogic.checkPlacement(Point(((mouseX - gameField.left) / (gameField.width/gridDims.width)).toInt, ((mouseY - gameField.top) / (gameField.height / gridDims.height)).toInt))
+  }
 
   override def settings(): Unit = {
     pixelDensity(displayDensity())
-    // If line below gives errors try size(widthInPixels, heightInPixels, PConstants.P2D)
     size(widthInPixels, heightInPixels)
   }
 
@@ -121,9 +121,6 @@ class GameMain extends GameBase {
     // for the first time, there is significant lag.
     // This prevents it from happening during gameplay.
     text("", 0, 0)
-
-    // This should be called last, since the game
-    // clock is officially ticking at this Coordinate
   }
 }
 
