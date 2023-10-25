@@ -8,14 +8,14 @@ class GameLogic(val randomGen: RandomGenerator) {
 
   // private var gameState = GameState(this.initialBoard, generateBlock())
   val gridDims: Dimensions = Dimensions(width = DefaultWidth, height = DefaultHeight)
+  private var gameState: GameState = GameState(generateBlock())
 
-  def getCellType(p : Point): CellType = if (p.cellFilled) FullCell else Empty
-  val currentBlock: Block = generateBlock()
+  def getCellType(p : Point): CellType = gameState.getCell(p)
 
   def isGameOver: Boolean = false
 
   def generateBlock(): Block = {
-    val newTetIndex = 1//randomGen.randomInt(9)
+    val newTetIndex = randomGen.randomInt(9)
     newTetIndex match {
       case 1 => JBlock()
       case 2 => LBlock()
@@ -29,10 +29,20 @@ class GameLogic(val randomGen: RandomGenerator) {
     }
   }
 
-  def getBlockCells(): Seq[Point] = currentBlock.l
+  def getBlockCells: Seq[Point] = gameState.b.l
 
-  def checkPlacement(centerPoint: Point): Unit = {
+  private def checkPlacement(block: List[Point]):Boolean = if(block.forall(p => gridDims.allPointsInside.contains(p) && getCellType(p) == Empty)) true else false
+
+  def placeBlock(centerPoint: Point): Unit = {
     println(centerPoint)
+    //currentBlock = currentBlock.moveAnchor(centerPoint)
+    val blockMap = gameState.b.mapToAnchor(centerPoint)
+    println(blockMap)
+
+    if (checkPlacement(blockMap)) {
+      blockMap.foreach(p => gameState = gameState.updateCell(p, FullCell))
+      gameState = GameState(gameState.gameBoard, generateBlock())
+    }
   }
 
 }
