@@ -53,7 +53,7 @@ class GameMain extends GameBase {
   def drawGameField(): Unit = {
     setBackground(Color.DarkCyan)
 
-    gridDims.allPointsInside.foreach(p => drawCell(getCell(p), p.cellFilled))
+    gridDims.allPointsInside.foreach(p => drawCell(getCell(p), gameLogic.getCellType(p)))
 
     for (i <- 0 to gridDims.width / 3) {
       drawLine(Coordinate((gameField.widthThirds(i)) + gameField.left, gameField.top), Coordinate(gameField.widthThirds(i) + gameField.left, gameField.bottom))
@@ -71,18 +71,18 @@ class GameMain extends GameBase {
     }
   }
 
-  private def drawCell(area: Rectangle, fill: Boolean): Unit = {
-    if (fill) setFillColor(Color.LightBlue) else setFillColor(Color.White)
+  private def drawCell(area: Rectangle, fill: CellType): Unit = {
+    if (fill != Empty) setFillColor(Color.LightBlue) else setFillColor(Color.White)
     drawRectangle(area)
   }
 
   private def getBlockArea(centerCoordinate: Coordinate = Coordinate(screenArea.centerX, screenArea.bottom - 100)): Seq[Rectangle] = {
-    gameLogic.getBlockCells().map(cell => Rectangle(Coordinate((centerCoordinate.x - widthPerCell / 2) + widthPerCell * cell.x, (centerCoordinate.y - heightPerCell / 2) + heightPerCell * cell.y), widthPerCell, heightPerCell))
+    gameLogic.getBlockCells.map(cell => Rectangle(Coordinate((centerCoordinate.x - widthPerCell / 2) + widthPerCell * cell.x, (centerCoordinate.y - heightPerCell / 2) + heightPerCell * cell.y), widthPerCell, heightPerCell))
   }
 
   private def drawMovableBlock(centerCoordinate: Coordinate = Coordinate(screenArea.centerX, screenArea.bottom - 100)): Unit = {
     val s = getBlockArea(centerCoordinate)
-    s.foreach(cell => drawCell(cell, fill = true))
+    s.foreach(cell => drawCell(cell, FullCell))
   }
 
   /** Method that calls handlers for different key press events.
@@ -108,7 +108,7 @@ class GameMain extends GameBase {
     mouseActive = false
     val mousePoint = Coordinate(mouseX.toFloat, mouseY.toFloat)
 
-    if(gameField.contains(mousePoint)) gameLogic.checkPlacement(Point(((mouseX - gameField.left) / (gameField.width/gridDims.width)).toInt, ((mouseY - gameField.top) / (gameField.height / gridDims.height)).toInt))
+    if(gameField.contains(mousePoint)) gameLogic.placeBlock(Point(((mouseX - gameField.left) / (gameField.width/gridDims.width)).toInt, ((mouseY - gameField.top) / (gameField.height / gridDims.height)).toInt))
   }
 
   override def settings(): Unit = {

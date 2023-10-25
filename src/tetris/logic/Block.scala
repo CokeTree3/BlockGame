@@ -4,7 +4,7 @@ abstract class Block(val l: List[Point], val blockType: Int, val anchorPoint: Po
   def rotateLeft(): Block
   def rotateRight(): Block
 
-  def createNewTet(l: List[Point], anchor: Point): Block = {
+  def moveAnchor(anchor: Point, l: List[Point] = this.l): Block = {
     blockType match {
       case 1 => JBlock(l, anchor)
       case 2 => LBlock(l, anchor)
@@ -17,17 +17,19 @@ abstract class Block(val l: List[Point], val blockType: Int, val anchorPoint: Po
       case 9 => OBlock(l, anchor)
     }
   }
+
+  def mapToAnchor(newAnchor: Point = this.anchorPoint): List[Point] = l.map(p => p.moveTo(newAnchor))
 }
 
 class CenterAnchorBlock(l: List[Point], blockType: Int, anchorPoint: Point) extends Block(l, blockType, anchorPoint){
   def rotateLeft(): Block = {
     val lNew = l.map(p => p.shiftCounterClockwise())
-    createNewTet(lNew, this.anchorPoint)
+    moveAnchor(this.anchorPoint, lNew)
   }
 
   def rotateRight(): Block = {
     val lNew = l.map(p => p.shiftClockwise())
-    createNewTet(lNew, this.anchorPoint)
+    moveAnchor(this.anchorPoint, lNew)
   }
 
 }
@@ -35,11 +37,11 @@ class CenterAnchorBlock(l: List[Point], blockType: Int, anchorPoint: Point) exte
 class OffsetAnchorBlock(l: List[Point], blockType: Int, anchorPoint: Point) extends Block(l, blockType, anchorPoint){
   def rotateLeft(): Block = {
     val lNew = l.map(p => p.shiftCounterClockwise().down())
-    createNewTet(lNew, this.anchorPoint)
+    moveAnchor(this.anchorPoint, lNew)
   }
 
   def rotateRight(): Block = {
     val lNew = l.map(p => p.shiftClockwise().right())
-    createNewTet(lNew, this.anchorPoint)
+    moveAnchor(this.anchorPoint, lNew)
   }
 }
