@@ -105,10 +105,9 @@ class GameMain extends GameBase {
   }
 
   override def mouseReleased(): Unit = {
-    mouseActive = false
     val mousePoint = Coordinate(mouseX.toFloat, mouseY.toFloat)
-
-    if(gameField.contains(mousePoint)) gameLogic.placeBlock(Point(((mouseX - gameField.left) / (gameField.width/gridDims.width)).toInt, ((mouseY - gameField.top) / (gameField.height / gridDims.height)).toInt))
+    if(mouseActive && gameField.contains(mousePoint)) gameLogic.placeBlock(Point(((mouseX - gameField.left) / (gameField.width/gridDims.width)).toInt, ((mouseY - gameField.top) / (gameField.height / gridDims.height)).toInt))
+    mouseActive = false
   }
 
   override def settings(): Unit = {
