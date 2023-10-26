@@ -101,7 +101,7 @@ class GameMain extends GameBase {
   }
 
   override def mouseDragged(event: MouseEvent): Unit = {
-    if(getBlockArea().exists(cell => cell.contains(Coordinate(mouseX.toFloat, mouseY.toFloat)))) mouseActive = true
+    if(!dispMainMenu && getBlockArea().exists(cell => cell.contains(Coordinate(mouseX.toFloat, mouseY.toFloat)))) mouseActive = true
   }
 
   override def mouseReleased(): Unit = {

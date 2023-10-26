@@ -5,8 +5,6 @@ import tetris.logic.GameLogic._
 
 
 class GameLogic(val randomGen: RandomGenerator) {
-
-  // private var gameState = GameState(this.initialBoard, generateBlock())
   val gridDims: Dimensions = Dimensions(width = DefaultWidth, height = DefaultHeight)
   private var gameState: GameState = GameState(generateBlock())
 
@@ -14,18 +12,26 @@ class GameLogic(val randomGen: RandomGenerator) {
 
   def isGameOver: Boolean = false
 
-  def generateBlock(): Block = {
-    val newTetIndex = randomGen.randomInt(9)
-    newTetIndex match {
-      case 1 => JBlock()
-      case 2 => LBlock()
-      case 3 => SBlock()
-      case 4 => ZBlock()
-      case 5 => TBlock()
-      case 6 => UBlock()
-      case 7 => I_Block()
-      case 8 => IBlock()
-      case 9 => OBlock()
+  private def generateBlock(): Block = {
+    def getBlock: Block = {
+      val newTetIndex = randomGen.randomInt(8) + 1
+      newTetIndex match {
+        case 1 => JBlock()
+        case 2 => LBlock()
+        case 3 => SBlock()
+        case 4 => ZBlock()
+        case 5 => TBlock()
+        case 6 => UBlock()
+        case 7 => I_Block()
+        case 8 => IBlock()
+        case 9 => OBlock()
+      }
+    }
+    randomGen.randomInt(100) % 4 match {
+      case 0 => getBlock
+      case 1 => getBlock.rotateLeft()
+      case 2 => getBlock.rotateLeft().rotateLeft()
+      case 3 => getBlock.rotateRight()
     }
   }
 
@@ -33,14 +39,24 @@ class GameLogic(val randomGen: RandomGenerator) {
 
   private def checkPlacement(block: List[Point]):Boolean = if(block.forall(p => gridDims.allPointsInside.contains(p) && getCellType(p) == Empty)) true else false
 
+  private def checkFull():Unit = {
+    var newBoard = gameState.gameBoard.map(row => if(!row.contains(Empty)) Seq.fill(gridDims.width)(Empty) else row)
+
+    for(i <- 0 until gridDims.width) {
+      if (!gameState.getColumn(i).contains(Empty)) newBoard = gameState.updateColumn(Empty, i)
+    }
+
+    gameState = gameState.updateBoard(newBoard)
+  }
+
   def placeBlock(centerPoint: Point): Unit = {
     println(centerPoint)
-    //currentBlock = currentBlock.moveAnchor(centerPoint)
     val blockMap = gameState.b.mapToAnchor(centerPoint)
     println(blockMap)
 
     if (checkPlacement(blockMap)) {
       blockMap.foreach(p => gameState = gameState.updateCell(p, FullCell))
+      checkFull()
       gameState = GameState(gameState.gameBoard, generateBlock())
     }
   }
