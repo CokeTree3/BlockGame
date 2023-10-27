@@ -62,7 +62,7 @@ class GameMain extends GameBase {
       drawLine(Coordinate(gameField.left, gameField.heightThirds(i) + gameField.top), Coordinate(gameField.right, gameField.heightThirds(i) + gameField.top))
     }
 
-    if(mouseActive)drawMovableBlock(Coordinate(mouseX.toFloat, mouseY.toFloat))
+    if(mouseActive && !gameLogic.isGameOver)drawMovableBlock(Coordinate(mouseX.toFloat, mouseY.toFloat))
     else drawMovableBlock()
 
     def getCell(p: GridCoordinate): Rectangle = {
