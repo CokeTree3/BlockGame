@@ -1,6 +1,3 @@
-// DO NOT MODIFY FOR BASIC SUBMISSION
-
-
 package tetris.game
 
 import java.awt.event
@@ -16,20 +13,20 @@ import tetris.logic.{Point => GridCoordinate}
 
 class GameMain extends GameBase {
 
-
   var dispMainMenu: Boolean = true
   var mouseActive: Boolean = false
-  var gameLogic: GameLogic = GameLogic()
+  private var gameLogic: GameLogic = GameLogic()
   val gridDims: Dimensions = gameLogic.gridDims
-  val heightInPixels: Int = 800 //(HeightCellInPixels * gridDims.height).ceil.toInt
-  val widthInPixels: Int = heightInPixels - heightInPixels / 3 //(WidthCellInPixels * gridDims.width).ceil.toInt
+  private val heightInPixels: Int = 800 //(HeightCellInPixels * gridDims.height).ceil.toInt
+  private val widthInPixels: Int = heightInPixels - heightInPixels / 3 //(WidthCellInPixels * gridDims.width).ceil.toInt
   val screenArea: Rectangle = Rectangle(Coordinate(0, 0), widthInPixels.toFloat, heightInPixels.toFloat)
   val gameField: Rectangle = Rectangle(Coordinate((widthInPixels / 8).toFloat, (heightInPixels / 10).toFloat), (widthInPixels - (widthInPixels / 4)).toFloat)
 
-  val widthPerCell: Float = gameField.width / gridDims.width
-  val heightPerCell: Float = gameField.height / gridDims.height
+  private var widthPerCell: Float = gameField.width / gridDims.width
+  private var heightPerCell: Float = widthPerCell
 
   override def draw(): Unit = {
+
     if (dispMainMenu) drawMainMenu()
     else drawGameField()
     if (gameLogic.isGameOver) drawGameOverScreen()
@@ -45,10 +42,9 @@ class GameMain extends GameBase {
       "Settings"    -> Rectangle(Coordinate(screenArea.centerX - 125, screenArea.heightThirds(2) + 120), 120, 40),
       "Quit"        -> Rectangle(Coordinate(screenArea.centerX + 5, screenArea.heightThirds(2) +120), 115, 40))
 
-    btnMap.foreach(btn => drawRectangle(btn._2, 20))
+    btnMap.foreach(btn => if(isMouseOver(btn._2)) drawRectangle(btn._2.grow(1.13f), 20) else drawRectangle(btn._2, 20))
     setFillColor(Color.Black)
     btnMap.foreach(btn => drawTextCentered(btn._1, 20, Coordinate(btn._2.centerX, btn._2.centerY + 7), Color.White))
-
   }
 
   def drawGameOverScreen(): Unit = {
@@ -58,6 +54,8 @@ class GameMain extends GameBase {
 
   def drawGameField(): Unit = {
     setBackground(Color.DarkCyan)
+    widthPerCell = gameField.width / gridDims.width
+    heightPerCell = widthPerCell
 
     gridDims.allPointsInside.foreach(p => drawCell(getCell(p), gameLogic.getCellType(p)))
 
@@ -79,10 +77,6 @@ class GameMain extends GameBase {
     drawTextCentered("Score: " + gameLogic.getScore,20, Coordinate(gameField.centerX, gameField.top - 30))
   }
 
-  private def drawPointCount(): Unit = {
-
-  }
-
   private def drawCell(area: Rectangle, fill: CellType): Unit = {
     if (fill != Empty) setFillColor(Color.LightBlue) else setFillColor(Color.White)
     drawRectangle(area)
@@ -94,7 +88,11 @@ class GameMain extends GameBase {
 
   private def drawMovableBlock(centerCoordinate: Coordinate = Coordinate(screenArea.centerX, screenArea.bottom - 100)): Unit = {
     val s = getBlockArea(centerCoordinate)
-    s.foreach(cell => drawCell(cell, FullCell))
+    if(s.exists(isMouseOver)){
+      widthPerCell = gameField.width * 1.09f / gridDims.width
+      heightPerCell = widthPerCell
+    }
+    getBlockArea(centerCoordinate).foreach(cell => drawCell(cell, FullCell))
   }
 
   /** Method that calls handlers for different key press events.
@@ -116,6 +114,8 @@ class GameMain extends GameBase {
     if(!dispMainMenu && getBlockArea().exists(cell => cell.contains(Coordinate(mouseX.toFloat, mouseY.toFloat)))) mouseActive = true
   }
 
+  private def isMouseOver(area: Rectangle): Boolean = area.contains(Coordinate(mouseX.toFloat, mouseY.toFloat))
+
   override def mouseReleased(): Unit = {
     val mousePoint = Coordinate(mouseX.toFloat, mouseY.toFloat)
     if(mouseActive && gameField.contains(mousePoint)) gameLogic.placeBlock(Point(((mouseX - gameField.left) / (gameField.width/gridDims.width)).toInt, ((mouseY - gameField.top) / (gameField.height / gridDims.height)).toInt))
@@ -136,10 +136,6 @@ class GameMain extends GameBase {
 }
 
 object GameMain {
-
-
-  val WidthCellInPixels: Double = 15 * GameLogic.DrawSizeFactor
-  val HeightCellInPixels: Double = WidthCellInPixels
 
   def main(args:Array[String]): Unit = {
     PApplet.main("tetris.game.GameMain")
