@@ -14,7 +14,7 @@ class GameLogic(val randomGen: RandomGenerator) {
 
   private def generateBlock(): Block = {
     def getBlock: Block = {
-      val newTetIndex = randomGen.randomInt(8) + 1
+      val newTetIndex = randomGen.randomInt(12) + 1
       newTetIndex match {
         case 1 => JBlock()
         case 2 => LBlock()
@@ -22,9 +22,13 @@ class GameLogic(val randomGen: RandomGenerator) {
         case 4 => ZBlock()
         case 5 => TBlock()
         case 6 => UBlock()
-        case 7 => I_Block()
-        case 8 => IBlock()
-        case 9 => OBlock()
+        case 7 => OBlock()
+        case 8 => I_Block()
+        case 9 => DotBlock()
+        case 10 => I2Block()
+        case 11 => I3Block()
+        case 12 => I4Block()
+
       }
     }
     randomGen.randomInt(100) % 4 match {

@@ -12,9 +12,13 @@ abstract class Block(val l: List[Point], val blockType: Int, val anchorPoint: Po
       case 4 => ZBlock(l, anchor)
       case 5 => TBlock(l, anchor)
       case 6 => UBlock(l, anchor)
-      case 7 => I_Block(l, anchor)
-      case 8 => IBlock(l, anchor)
-      case 9 => OBlock(l, anchor)
+      case 7 => OBlock(l, anchor)
+      case 8 => I_Block(l, anchor)
+      case 9 => DotBlock(l, anchor)
+      case 10 => I2Block(l, anchor)
+      case 11 => I3Block(l, anchor)
+      case 12 => I4Block(l, anchor)
+
     }
   }
 

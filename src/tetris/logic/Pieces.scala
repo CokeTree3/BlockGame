@@ -54,22 +54,47 @@ object UBlock{
   def apply() : UBlock = new UBlock(List[Point](Point(-1, -1), Point(-1, 0), Point(0, 0), Point(1, 0), Point(1, -1)))
 }
 
-case class I_Block(blockList: List[Point], anchorP: Point = Point(0, 0)) extends CenterAnchorBlock(blockList, 7, anchorP){
+
+case class OBlock(blockList: List[Point], anchorP: Point = Point(0, 0)) extends CenterAnchorBlock(blockList, 7, anchorP){
+}
+object OBlock{
+  def apply() : OBlock = new OBlock(List[Point](Point(0, -1), Point(0, 0), Point(1, -1), Point(1, 0)))
+}
+
+
+case class I_Block(blockList: List[Point], anchorP: Point = Point(0, 0)) extends CenterAnchorBlock(blockList, 8, anchorP){
 }
 object I_Block{
   def apply() : I_Block = new I_Block(List[Point](Point(-1, -1), Point(-1, 0), Point(-1, 1), Point(0, 1), Point(1, 1)))
 }
 
 
-case class IBlock(blockList: List[Point], anchorP: Point = Point(0, 0)) extends OffsetAnchorBlock(blockList, 8, anchorP){
+case class DotBlock(blockList: List[Point], anchorP: Point = Point(0, 0)) extends CenterAnchorBlock(blockList, 9, anchorP){
 }
-object IBlock{
-  def apply() : IBlock = new IBlock(List[Point](Point(-1, 0), Point(0, 0), Point(1, 0), Point(2, 0)))
+object DotBlock{
+  def apply() : DotBlock = new DotBlock(List[Point](Point(0, 0)))
 }
 
 
-case class OBlock(blockList: List[Point], anchorP: Point = Point(0, 0)) extends OffsetAnchorBlock(blockList, 9, anchorP){
+case class I2Block(blockList: List[Point], anchorP: Point = Point(0, 0)) extends CenterAnchorBlock(blockList, 10, anchorP){
 }
-object OBlock{
-  def apply() : OBlock = new OBlock(List[Point](Point(0, -1), Point(0, 0), Point(1, -1), Point(1, 0)))
+object I2Block{
+  def apply() : I2Block = new I2Block(List[Point](Point(0, 0), Point(1, 0)))
 }
+
+
+case class I3Block(blockList: List[Point], anchorP: Point = Point(0, 0)) extends CenterAnchorBlock(blockList, 11, anchorP){
+}
+object I3Block{
+  def apply() : I3Block = new I3Block(List[Point](Point(0, 0), Point(1, 0), Point(-1, 0)))
+}
+
+
+case class I4Block(blockList: List[Point], anchorP: Point = Point(0, 0)) extends CenterAnchorBlock(blockList, 12, anchorP){
+}
+object I4Block{
+  def apply() : I4Block = new I4Block(List[Point](Point(0, 0), Point(1, 0), Point(-1, 0), Point(2, 0)))
+}
+
+
+
