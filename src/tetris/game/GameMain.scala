@@ -75,6 +75,12 @@ class GameMain extends GameBase {
       val leftUp = Coordinate(gameField.left + p.x * widthPerCell, gameField.top + p.y * heightPerCell)
       Rectangle(leftUp, widthPerCell, heightPerCell)
     }
+
+    drawTextCentered("Score: " + gameLogic.getScore,20, Coordinate(gameField.centerX, gameField.top - 30))
+  }
+
+  private def drawPointCount(): Unit = {
+
   }
 
   private def drawCell(area: Rectangle, fill: CellType): Unit = {

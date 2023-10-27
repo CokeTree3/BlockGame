@@ -41,6 +41,8 @@ class GameLogic(val randomGen: RandomGenerator) {
 
   def getBlockCells: Seq[Point] = gameState.b.l
 
+  def getScore: String = gameState.score.toString
+
   private def checkPlacement(block: List[Point]):Boolean = if(block.forall(p => gridDims.allPointsInside.contains(p) && getCellType(p) == Empty)) true else false
 
   private def checkGameOver(): Boolean = {
@@ -48,11 +50,17 @@ class GameLogic(val randomGen: RandomGenerator) {
   }
 
   private def checkFull():Unit = {
-    var tempState = GameState(gameState.gameBoard, gameState.b)
-    tempState = tempState.updateBoard(gameState.gameBoard.map(row => if(!row.contains(Empty)) Seq.fill(gridDims.width)(Empty) else row))
+    var tempState = GameState(gameState.gameBoard, gameState.b, gameState.score)
+    tempState = tempState.updateBoard(gameState.gameBoard.map(row => if(!row.contains(Empty)) {
+        gameState = gameState.updateScore(gridDims.width)
+        Seq.fill(gridDims.width)(Empty)
+    } else row))
 
     for(i <- 0 until gridDims.width) {
-      if (!gameState.getColumn(i).contains(Empty)) tempState = tempState.updateColumn(Empty, i)
+      if (!gameState.getColumn(i).contains(Empty)) {
+        tempState = tempState.updateColumn(Empty, i)
+        gameState = gameState.updateScore(gridDims.width)
+      }
     }
 
     var squareArea = Game3x3Square()
@@ -60,10 +68,11 @@ class GameLogic(val randomGen: RandomGenerator) {
       val square = squareArea.mapToAnchor()
       if (square.forall(p => gameState.getCell(p) != Empty)) {
         square.foreach(p => tempState = tempState.updateCell(p, Empty))
+        gameState = gameState.updateScore(gridDims.width)
       }
       squareArea = squareArea.moveNext
     }
-    gameState = tempState
+    gameState = gameState.updateBoard(tempState.gameBoard)
   }
 
   def placeBlock(centerPoint: Point): Unit = {
@@ -71,8 +80,9 @@ class GameLogic(val randomGen: RandomGenerator) {
 
     if (checkPlacement(blockMap)) {
       blockMap.foreach(p => gameState = gameState.updateCell(p, FullCell))
+      gameState = gameState.updateScore(blockMap.length)
       checkFull()
-      gameState = GameState(gameState.gameBoard, generateBlock())
+      gameState = gameState.updateBlock(generateBlock())
       isGameOver = checkGameOver()
     }
   }
