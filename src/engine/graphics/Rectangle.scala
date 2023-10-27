@@ -27,14 +27,11 @@ case class Rectangle(leftUp: Coordinate, width: Float, height: Float) {
     val diffX = (newWidth - width) / 2
     val diffY = (newHeight - height) / 2
     Rectangle(Coordinate(left - diffX, top - diffY ), newWidth,newHeight)
-
   }
 
   def contains(p : Coordinate) : Boolean =
     p.x >= left && p.x < right && p.y >= top && p.y < bottom
 
-  def localCoordinate(globalCoordinate : Coordinate) : Coordinate =
-    globalCoordinate - leftUp
 }
 
 object Rectangle{

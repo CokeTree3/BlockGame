@@ -12,20 +12,19 @@ class GameBase   extends PApplet {
   // ===Processing Wrappers & Abstractions===
 
 
-  def drawTextCentered(string: String, size: Float, center: Coordinate): Unit = {
+  def drawTextCentered(string: String, size: Float, center: Coordinate, outlineColor: Color = Black): Unit = {
     val (x, y) = (center.x, center.y-(size/2))
     textAlign(PConstants.CENTER, PConstants.CENTER)
     textSize(size)
-    drawText(string, Coordinate(x, y))
+    drawText(string, Coordinate(x, y), outlineColor)
   }
 
-  def drawText(string: String, pos: Coordinate, withShadow: Boolean = true): Unit = {
-    if (withShadow) drawTextShadow(string, pos)
+  private def drawText(string: String, pos: Coordinate, outlineColor: Color): Unit = {
+    drawTextShadow(string, pos, outlineColor)
     text(string, pos.x, pos.y)
   }
 
-  /** Quick hack for legibility on different backgrounds */
-  def drawTextShadow(string: String, pos: Coordinate, color: Color = Black, thickness: Float = 1): Unit = {
+  private def drawTextShadow(string: String, pos: Coordinate, color: Color, thickness: Float = 1): Unit = {
     pushStyle()
     setFillColor(color)
     List((1,0),(-1,0),(0,1),(0,-1)).foreach(t => {
@@ -42,8 +41,8 @@ class GameBase   extends PApplet {
 
   }
 
-  def drawRectangle(r: Rectangle): Unit = {
-    rect(r.left, r.top, r.width, r.height)
+  def drawRectangle(r: Rectangle, rad: Float = 0f): Unit = {
+    rect(r.left, r.top, r.width, r.height, rad)
   }
 
   def setFillColor(c: Color): Unit =

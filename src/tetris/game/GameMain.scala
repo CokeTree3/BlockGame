@@ -38,11 +38,17 @@ class GameMain extends GameBase {
   def drawMainMenu(): Unit = {
     setFillColor(Color.White)
     setBackground(Color.DarkBlue)
-    drawTextCentered("Game Menu", 50, screenArea.center)
-    drawTextCentered("^", 20, gameField.leftUp)
-    drawTextCentered("<", 20, gameField.leftDown)
-    drawTextCentered("^", 20, gameField.rightUp)
-    drawTextCentered(">", 20, gameField.rightDown)
+    drawTextCentered("Game Menu", 50, Coordinate(gameField.centerX, gameField.heightThirds(1)))
+    val btnMap = Map[String, Rectangle](
+      "Infinite Play" -> Rectangle(Coordinate(screenArea.centerX - 125, screenArea.heightThirds(2) - 20), 250, 40),
+      "Custom Game" -> Rectangle(Coordinate(screenArea.centerX - 125, screenArea.heightThirds(2) + 50), 250, 40),
+      "Settings"    -> Rectangle(Coordinate(screenArea.centerX - 125, screenArea.heightThirds(2) + 120), 120, 40),
+      "Quit"        -> Rectangle(Coordinate(screenArea.centerX + 5, screenArea.heightThirds(2) +120), 115, 40))
+
+    btnMap.foreach(btn => drawRectangle(btn._2, 20))
+    setFillColor(Color.Black)
+    btnMap.foreach(btn => drawTextCentered(btn._1, 20, Coordinate(btn._2.centerX, btn._2.centerY + 7), Color.White))
+
   }
 
   def drawGameOverScreen(): Unit = {
