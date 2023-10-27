@@ -10,11 +10,12 @@ case class GameState(gameBoard: Seq[Seq[CellType]], b: Block) {
 
   def getColumn(index: Int):Seq[CellType] = for(row <- gameBoard.indices) yield gameBoard(row)(index)
 
-  def updateColumn(value:CellType, index: Int): Seq[Seq[CellType]] = {
+  def updateColumn(value:CellType, index: Int): GameState = {
     var newBoard = gameBoard
     for(row <- gameBoard.indices)newBoard = newBoard.updated(row, newBoard(row).updated(index, value))
-    newBoard
+    GameState(newBoard, this.b)
   }
+
 
   def getAnchor: Point = b.anchorPoint
 

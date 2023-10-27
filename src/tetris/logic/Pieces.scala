@@ -1,5 +1,19 @@
 package tetris.logic
 
+case class Game3x3Square(blockList: List[Point], anchorP: Point = Point(0, 0)) extends CenterAnchorBlock(blockList, 0, anchorP) {
+
+  def moveNext: Game3x3Square = {
+    this.anchorP.x match {
+      case 7 if this.anchorP.y == 7 => Game3x3Square()
+      case 7 => Game3x3Square(blockList, Point(1, this.anchorP.y + 3))
+      case _ => Game3x3Square(blockList, Point(this.anchorP.x + 3, this.anchorP.y))
+    }
+  }
+}
+object Game3x3Square{
+  def apply() : Game3x3Square = new Game3x3Square(List[Point](Point(-1, -1), Point(-1, 0), Point(-1, 1), Point(0, -1), Point(0, 0), Point(0, 1), Point(1, -1), Point(1, 0), Point(1, 1)), Point(1, 1))
+}
+
 case class JBlock(blockList: List[Point], anchorP: Point = Point(0, 0)) extends CenterAnchorBlock(blockList, 1, anchorP) {
 }
 object JBlock{

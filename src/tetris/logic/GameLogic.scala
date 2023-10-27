@@ -8,9 +8,9 @@ class GameLogic(val randomGen: RandomGenerator) {
   val gridDims: Dimensions = Dimensions(width = DefaultWidth, height = DefaultHeight)
   private var gameState: GameState = GameState(generateBlock())
 
-  def getCellType(p : Point): CellType = gameState.getCell(p)
+  var isGameOver: Boolean = false
 
-  def isGameOver: Boolean = false
+  def getCellType(p : Point): CellType = gameState.getCell(p)
 
   private def generateBlock(): Block = {
     def getBlock: Block = {
@@ -39,28 +39,39 @@ class GameLogic(val randomGen: RandomGenerator) {
 
   private def checkPlacement(block: List[Point]):Boolean = if(block.forall(p => gridDims.allPointsInside.contains(p) && getCellType(p) == Empty)) true else false
 
+  private def checkGameOver(): Boolean = {
+    !gridDims.allPointsInside.exists(point => gameState.getCell(point) == Empty && checkPlacement(gameState.b.mapToAnchor(point)))
+  }
+
   private def checkFull():Unit = {
-    var newBoard = gameState.gameBoard.map(row => if(!row.contains(Empty)) Seq.fill(gridDims.width)(Empty) else row)
+    var tempState = GameState(gameState.gameBoard, gameState.b)
+    tempState = tempState.updateBoard(gameState.gameBoard.map(row => if(!row.contains(Empty)) Seq.fill(gridDims.width)(Empty) else row))
 
     for(i <- 0 until gridDims.width) {
-      if (!gameState.getColumn(i).contains(Empty)) newBoard = gameState.updateColumn(Empty, i)
+      if (!gameState.getColumn(i).contains(Empty)) tempState = tempState.updateColumn(Empty, i)
     }
 
-    gameState = gameState.updateBoard(newBoard)
+    var squareArea = Game3x3Square()
+    for (i <- 0 until 9) {
+      val square = squareArea.mapToAnchor()
+      if (square.forall(p => gameState.getCell(p) != Empty)) {
+        square.foreach(p => tempState = tempState.updateCell(p, Empty))
+      }
+      squareArea = squareArea.moveNext
+    }
+    gameState = tempState
   }
 
   def placeBlock(centerPoint: Point): Unit = {
-    println(centerPoint)
     val blockMap = gameState.b.mapToAnchor(centerPoint)
-    println(blockMap)
 
     if (checkPlacement(blockMap)) {
       blockMap.foreach(p => gameState = gameState.updateCell(p, FullCell))
       checkFull()
       gameState = GameState(gameState.gameBoard, generateBlock())
+      isGameOver = checkGameOver()
     }
   }
-
 }
 
 
