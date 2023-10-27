@@ -13,14 +13,21 @@ import tetris.logic.{Point => GridCoordinate}
 
 class GameMain extends GameBase {
 
-  var dispMainMenu: Boolean = true
-  var mouseActive: Boolean = false
-  private var gameLogic: GameLogic = GameLogic()
+  private var dispMainMenu = true
+  private var dispSettingMenu = false
+  private var mouseActive = false
+  private var gameLogic = GameLogic()
   val gridDims: Dimensions = gameLogic.gridDims
-  private val heightInPixels: Int = 800 //(HeightCellInPixels * gridDims.height).ceil.toInt
-  private val widthInPixels: Int = heightInPixels - heightInPixels / 3 //(WidthCellInPixels * gridDims.width).ceil.toInt
+  private val heightInPixels = 800
+  private val widthInPixels = heightInPixels - heightInPixels / 3
   val screenArea: Rectangle = Rectangle(Coordinate(0, 0), widthInPixels.toFloat, heightInPixels.toFloat)
   val gameField: Rectangle = Rectangle(Coordinate((widthInPixels / 8).toFloat, (heightInPixels / 10).toFloat), (widthInPixels - (widthInPixels / 4)).toFloat)
+
+  private val btnMap = Map[String, Rectangle](
+    "Infinite Play" -> Rectangle(Coordinate(screenArea.centerX - 125, screenArea.heightThirds(2) - 20), 250, 40),
+    "Custom Game" -> Rectangle(Coordinate(screenArea.centerX - 125, screenArea.heightThirds(2) + 50), 250, 40),
+    "Settings" -> Rectangle(Coordinate(screenArea.centerX - 125, screenArea.heightThirds(2) + 120), 120, 40),
+    "Quit" -> Rectangle(Coordinate(screenArea.centerX + 5, screenArea.heightThirds(2) + 120), 115, 40))
 
   private var widthPerCell: Float = gameField.width / gridDims.width
   private var heightPerCell: Float = widthPerCell
@@ -36,11 +43,6 @@ class GameMain extends GameBase {
     setFillColor(Color.White)
     setBackground(Color.DarkBlue)
     drawTextCentered("Game Menu", 50, Coordinate(gameField.centerX, gameField.heightThirds(1)))
-    val btnMap = Map[String, Rectangle](
-      "Infinite Play" -> Rectangle(Coordinate(screenArea.centerX - 125, screenArea.heightThirds(2) - 20), 250, 40),
-      "Custom Game" -> Rectangle(Coordinate(screenArea.centerX - 125, screenArea.heightThirds(2) + 50), 250, 40),
-      "Settings"    -> Rectangle(Coordinate(screenArea.centerX - 125, screenArea.heightThirds(2) + 120), 120, 40),
-      "Quit"        -> Rectangle(Coordinate(screenArea.centerX + 5, screenArea.heightThirds(2) +120), 115, 40))
 
     btnMap.foreach(btn => if(isMouseOver(btn._2)) drawRectangle(btn._2.grow(1.13f), 20) else drawRectangle(btn._2, 20))
     setFillColor(Color.Black)
@@ -56,6 +58,8 @@ class GameMain extends GameBase {
     setBackground(Color.DarkCyan)
     widthPerCell = gameField.width / gridDims.width
     heightPerCell = widthPerCell
+    setFillColor(Color.White)
+    drawRectangle(gameField, 0f)
 
     gridDims.allPointsInside.foreach(p => drawCell(getCell(p), gameLogic.getCellType(p)))
 
@@ -66,7 +70,7 @@ class GameMain extends GameBase {
       drawLine(Coordinate(gameField.left, gameField.heightThirds(i) + gameField.top), Coordinate(gameField.right, gameField.heightThirds(i) + gameField.top))
     }
 
-    if(mouseActive && !gameLogic.isGameOver)drawMovableBlock(Coordinate(mouseX.toFloat, mouseY.toFloat))
+    if(mouseActive && !gameLogic.isGameOver)drawMovableBlock(getMouseCoordinate)
     else drawMovableBlock()
 
     def getCell(p: GridCoordinate): Rectangle = {
@@ -77,22 +81,22 @@ class GameMain extends GameBase {
     drawTextCentered("Score: " + gameLogic.getScore,20, Coordinate(gameField.centerX, gameField.top - 30))
   }
 
-  private def drawCell(area: Rectangle, fill: CellType): Unit = {
+  private def drawCell(area: Rectangle, fill: CellType, rad: Float = 2f): Unit = {
     if (fill != Empty) setFillColor(Color.LightBlue) else setFillColor(Color.White)
-    drawRectangle(area)
+    drawRectangle(area, rad)
   }
 
-  private def getBlockArea(centerCoordinate: Coordinate = Coordinate(screenArea.centerX, screenArea.bottom - 100)): Seq[Rectangle] = {
+  private def getBlockArea(centerCoordinate: Coordinate = Coordinate(screenArea.centerX, screenArea.heightThirds(2) + 75)): Seq[Rectangle] = {
     gameLogic.getBlockCells.map(cell => Rectangle(Coordinate((centerCoordinate.x - widthPerCell / 2) + widthPerCell * cell.x, (centerCoordinate.y - heightPerCell / 2) + heightPerCell * cell.y), widthPerCell, heightPerCell))
   }
 
-  private def drawMovableBlock(centerCoordinate: Coordinate = Coordinate(screenArea.centerX, screenArea.bottom - 100)): Unit = {
+  private def drawMovableBlock(centerCoordinate: Coordinate = Coordinate(screenArea.centerX, screenArea.heightThirds(2) + 75)): Unit = {
     val s = getBlockArea(centerCoordinate)
     if(s.exists(isMouseOver)){
       widthPerCell = gameField.width * 1.09f / gridDims.width
       heightPerCell = widthPerCell
     }
-    getBlockArea(centerCoordinate).foreach(cell => drawCell(cell, FullCell))
+    getBlockArea(centerCoordinate).foreach(cell => drawCell(cell, FullCell, 5f))
   }
 
   /** Method that calls handlers for different key press events.
@@ -110,14 +114,26 @@ class GameMain extends GameBase {
     }
   }
 
+  private def getMouseCoordinate: Coordinate = Coordinate(mouseX.toFloat, mouseY.toFloat)
+
   override def mouseDragged(event: MouseEvent): Unit = {
-    if(!dispMainMenu && getBlockArea().exists(cell => cell.contains(Coordinate(mouseX.toFloat, mouseY.toFloat)))) mouseActive = true
+    if(!dispMainMenu && getBlockArea().exists(cell => cell.contains(getMouseCoordinate))) mouseActive = true
   }
 
-  private def isMouseOver(area: Rectangle): Boolean = area.contains(Coordinate(mouseX.toFloat, mouseY.toFloat))
+  override def mouseClicked(): Unit = {
+    if(dispMainMenu){
+      val mouseLoc = getMouseCoordinate
+      if(btnMap("Infinite Play").contains(mouseLoc)) dispMainMenu = false
+      else if (btnMap("Custom Game").contains(mouseLoc)) dispMainMenu = false
+      else if (btnMap("Settings").contains(mouseLoc)) dispSettingMenu = true
+      else if (btnMap("Quit").contains(mouseLoc)) System.exit(0)
+    }
+  }
+
+  private def isMouseOver(area: Rectangle): Boolean = area.contains(getMouseCoordinate)
 
   override def mouseReleased(): Unit = {
-    val mousePoint = Coordinate(mouseX.toFloat, mouseY.toFloat)
+    val mousePoint = getMouseCoordinate
     if(mouseActive && gameField.contains(mousePoint)) gameLogic.placeBlock(Point(((mouseX - gameField.left) / (gameField.width/gridDims.width)).toInt, ((mouseY - gameField.top) / (gameField.height / gridDims.height)).toInt))
     mouseActive = false
   }

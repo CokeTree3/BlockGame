@@ -41,7 +41,7 @@ class GameBase   extends PApplet {
 
   }
 
-  def drawRectangle(r: Rectangle, rad: Float = 0f): Unit = {
+  def drawRectangle(r: Rectangle, rad: Float = 5f): Unit = {
     rect(r.left, r.top, r.width, r.height, rad)
   }
 
