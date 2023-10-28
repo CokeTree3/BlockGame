@@ -11,15 +11,14 @@ import tetris.logic._
 import tetris.game.GameMain._
 import tetris.logic.{Point => GridCoordinate}
 
+import java.io.{File, PrintWriter}
 import scala.io.Source
 
 class GameMain extends GameBase {
 
   private var dispState = 0
   private var imgList = List[PImage]()
-  private val settingsFile = Source.fromFile("./res/settings.ini")
-  private val settingsData = settingsFile.getLines().toList.map(_.split("= ")(1))
-  settingsFile.close()
+  private var settingsData = readSettings()
 
   private var mouseActive = false
   private val gameLogic = GameLogic()
@@ -30,17 +29,17 @@ class GameMain extends GameBase {
   val screenArea: Rectangle = Rectangle(Coordinate(0, 0), widthInPixels.toFloat, heightInPixels.toFloat)
   private val gameField: Rectangle = Rectangle(Coordinate((widthInPixels / 8).toFloat, (heightInPixels / 10).toFloat), (widthInPixels - (widthInPixels / 4)).toFloat)
 
-  private var widthPerCell: Float = gameField.width / gridDims.width
-  private var heightPerCell: Float = widthPerCell
+  private val widthPerCell: Float = gameField.width / gridDims.width
+  private val heightPerCell: Float = widthPerCell
 
   override def draw(): Unit = {
     if (dispState == 0) drawMainMenu()
     else if(dispState == 2) drawSettingsMenu()
     else if(dispState == 3) drawGameOverScreen()
-    else drawGameField()
+    else drawGameScene()
   }
 
-  def drawSettingsMenu(): Unit = {
+  private def drawSettingsMenu(): Unit = {
     setBackground(Color.DarkBlue)
     setFillColor(Color.DarkGrey)
 
@@ -50,16 +49,16 @@ class GameMain extends GameBase {
     drawBtns(getBtnMap(screenArea, dispState))
   }
 
-  def drawMainMenu(): Unit = {
+  private def drawMainMenu(): Unit = {
     setFillColor(Color.White)
     setBackground(Color.DarkBlue)
     drawTextCentered("Game Menu", 50, Coordinate(gameField.centerX, gameField.heightThirds(1)))
-    drawTextCentered("Best Score: " + settingsData.head,  25, Coordinate(gameField.centerX, gameField.centerY + 20))
+    drawTextCentered("Best Score: " + settingsData.head.split("= ")(1),  25, Coordinate(gameField.centerX, gameField.centerY + 20))
 
     drawBtns(getBtnMap(screenArea, dispState))
   }
 
-  def drawGameOverScreen(): Unit = {
+  private def drawGameOverScreen(): Unit = {
     setFillColor(Color.LightBlue.fade(50f), 40f)
     drawRectangle(Rectangle(Coordinate(screenArea.left + 30, screenArea.top + 30), screenArea.width - 60, screenArea.height - 60), 70f)
 
@@ -73,14 +72,26 @@ class GameMain extends GameBase {
     drawBtns(getBtnMap(screenArea, dispState))
   }
 
-  def drawGameField(): Unit = {
+  private def drawGameScene(): Unit = {
     setBackground(Color.DarkCyan)
-    widthPerCell = gameField.width / gridDims.width
-    heightPerCell = widthPerCell
+    drawGameField()
 
+    if(mouseActive && !gameLogic.isGameOver)drawMovableBlock(getMouseCoordinate)
+    else drawMovableBlock()
+
+    drawTextCentered("Score: " + gameLogic.getScore,20, Coordinate(gameField.centerX, gameField.top - 30))
+
+    showImage(imgList.head, getBtnMap(screenArea, dispState)("_pause"))
+
+    if(gameLogic.isGameOver) {
+      if(gameLogic.getScore.toInt > settingsData.head.split("= ")(1).toInt) updateBestScore(gameLogic.getScore.toInt)
+      dispState = 3
+    }
+  }
+
+  private def drawGameField(): Unit = {
     setFillColor(Color.White)
     drawRectangle(gameField, 0f)
-
     gridDims.allPointsInside.foreach(p => drawCell(getCell(p), gameLogic.getCellType(p)))
 
     for (i <- 0 to gridDims.width / 3) {
@@ -90,21 +101,9 @@ class GameMain extends GameBase {
       drawLine(Coordinate(gameField.left, gameField.heightThirds(i) + gameField.top), Coordinate(gameField.right, gameField.heightThirds(i) + gameField.top))
     }
 
-    if(mouseActive && !gameLogic.isGameOver)drawMovableBlock(getMouseCoordinate)
-    else drawMovableBlock()
-
     def getCell(p: GridCoordinate): Rectangle = {
       val leftUp = Coordinate(gameField.left + p.x * widthPerCell, gameField.top + p.y * heightPerCell)
       Rectangle(leftUp, widthPerCell, heightPerCell)
-    }
-
-    drawTextCentered("Score: " + gameLogic.getScore,20, Coordinate(gameField.centerX, gameField.top - 30))
-
-    showImage(imgList.head, getBtnMap(screenArea, dispState)("_pause"))
-
-    if(gameLogic.isGameOver) {
-
-      dispState = 3
     }
   }
 
@@ -177,6 +176,26 @@ class GameMain extends GameBase {
     val mousePoint = getMouseCoordinate
     if(mouseActive && gameField.contains(mousePoint)) gameLogic.placeBlock(Point(((mouseX - gameField.left) / (gameField.width/gridDims.width)).toInt, ((mouseY - gameField.top) / (gameField.height / gridDims.height)).toInt))
     mouseActive = false
+  }
+
+  private def updateBestScore(newVal: Int): Unit = {
+    val tempFile = new File("./res/tmp.ini")
+    new File("./res/settings.ini").delete()
+
+    val writer = new PrintWriter(tempFile)
+    writer.println(settingsData.head.dropRight(1) + newVal)
+    settingsData.tail.foreach(writer.println)
+    writer.close()
+
+    tempFile.renameTo(new File("./res/settings.ini"))
+    settingsData = readSettings()
+  }
+
+  private def readSettings(): List[String] = {
+    val settingsFile = Source.fromFile("./res/settings.ini")
+    val data = settingsFile.getLines().toList.map(_.trim)
+    settingsFile.close()
+    data
   }
 
   override def settings(): Unit = {
