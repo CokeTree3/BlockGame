@@ -22,7 +22,7 @@ class GameBase   extends PApplet {
       "X" -> Rectangle(Coordinate(screenArea.right - 95, screenArea.top + 60), 35))
 
     val gameButtons = Map[String, Rectangle](
-      "Pause" -> Rectangle(Coordinate(screenArea.right - 55, screenArea.top + 20), 35))
+      "||" -> Rectangle(Coordinate(screenArea.right - 55, screenArea.top + 10), 45))
 
     val gameOverButtons = Map[String, Rectangle](
       "Restart" -> Rectangle(Coordinate(screenArea.left + 60, screenArea.heightThirds(2) - 20), 200, 50),
@@ -72,6 +72,9 @@ class GameBase   extends PApplet {
 
   def setFillColor(c: Color, alpha: Float = 255f): Unit =
     fill(c.red, c.green, c.blue, alpha)
+
+  def setStroke(c: Color): Unit =
+    stroke(c.red, c.green, c.blue)
 
   def setBackground(c: Color): Unit =
     background(c.red, c.green, c.blue, c.alpha)

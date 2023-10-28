@@ -4,7 +4,7 @@ import java.awt.event
 import java.awt.event.KeyEvent._
 import engine.GameBase
 import engine.graphics.{Color, Coordinate, Rectangle}
-import processing.core.{PApplet, PConstants}
+import processing.core.{PApplet, PConstants, PImage, PShape}
 import processing._
 import processing.event.{KeyEvent, MouseEvent}
 import tetris.logic._
@@ -14,6 +14,7 @@ import tetris.logic.{Point => GridCoordinate}
 class GameMain extends GameBase {
 
   private var dispState = 0
+  private var imgList = List[PImage]()
   private var mouseActive = false
   private var gameLogic = GameLogic()
   val gridDims: Dimensions = gameLogic.gridDims
@@ -59,6 +60,8 @@ class GameMain extends GameBase {
     setFillColor(Color.White)
     drawTextCentered("Score: " + gameLogic.getScore, 40, Coordinate(screenArea.centerX, gameField.heightThirds(1) + gameField.top))
 
+    setFillColor(Color.Black)
+    setStroke(Color.Black)
     drawBtns(getBtnMap(screenArea, dispState))
   }
 
@@ -66,6 +69,7 @@ class GameMain extends GameBase {
     setBackground(Color.DarkCyan)
     widthPerCell = gameField.width / gridDims.width
     heightPerCell = widthPerCell
+    println(widthPerCell)
     setFillColor(Color.White)
     drawRectangle(gameField, 0f)
 
@@ -88,12 +92,16 @@ class GameMain extends GameBase {
 
     drawTextCentered("Score: " + gameLogic.getScore,20, Coordinate(gameField.centerX, gameField.top - 30))
 
+    val rect = getBtnMap(screenArea, dispState)("||")
+    image(imgList.head, rect.left, rect.top, rect.width, rect.height)
+
   }
 
-  private def drawBtns(btnMap: Map[String, Rectangle]): Unit = {
+  private def drawBtns(btnMap: Map[String, Rectangle], fillCol: Color = Color.Black, strokeCol: Color = Color.White): Unit = {
+    setFillColor(strokeCol)
     btnMap.foreach(btn => if (isMouseOver(btn._2)) drawRectangle(btn._2.grow(1.13f), 20) else drawRectangle(btn._2, 20))
-    setFillColor(Color.Black)
-    btnMap.foreach(btn => drawTextCentered(btn._1, 20, Coordinate(btn._2.centerX, btn._2.centerY + 7), Color.White))
+    setFillColor(fillCol)
+    btnMap.foreach(btn => drawTextCentered(btn._1, 20, Coordinate(btn._2.centerX, btn._2.centerY + 7), strokeCol))
   }
 
   private def drawCell(area: Rectangle, fill: CellType, rad: Float = 2f): Unit = {
@@ -146,6 +154,10 @@ class GameMain extends GameBase {
       else if (map("Settings").contains(mouseLoc)) dispState = 2
       else if (map("Quit").contains(mouseLoc)) System.exit(0)
     }
+    else if(dispState == 1){
+      if(map("||").contains(mouseLoc)) dispState = 0
+
+    }
     else if(dispState == 2){
       if (map("Reset Score").contains(mouseLoc)) gameLogic.resetGame()
       else if (map("Colour Theme").contains(mouseLoc)) ???                          // TODO change theme
@@ -177,10 +189,8 @@ class GameMain extends GameBase {
   }
 
   override def setup(): Unit = {
-    // Fonts are loaded lazily, so when we call text()
-    // for the first time, there is significant lag.
-    // This prevents it from happening during gameplay.
     text("", 0, 0)
+    imgList = imgList.appended(loadImage("./res/pauseMenuImg.png"))
   }
 }
 

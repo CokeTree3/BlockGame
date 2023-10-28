@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="40" height="40" viewBox="0 0 40 40">
+  <defs>
+    <image id="image" width="5" height="28" xlink:href="data:img/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAcCAYAAACptnW2AAAAKElEQVQokWNAAv9hTEYo/R9JkpERTQAMmNAFRgWHmyDWxICZbBgYGADvfgUvfazRaAAAAABJRU5ErkJggg=="/>
+  </defs>
+  <use x="10" y="6" xlink:href="#image"/>
+  <use x="25" y="6" xlink:href="#image"/>
+  <image id="noun-rounded-square-191781" x="1" y="1" width="38" height="48" xlink:href="data:img/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAwCAYAAAB9sggoAAAArklEQVRYhe2YUQqAIBBEtfvf2b4KXcdqQF2leZ+2MI8JBDcGTGqcj6LysAezhSy3Ty6GpFqN9qKZeQXbgdFClir/AEOzpWBmNLYeUjm3C2psCXIx77YKhy0aWwqJsUiMRWIsEmORGIvEWCTGIjEWibFIjEViH4Evce8VVAHa9ni9yAsH9Cs9mqsyl1/cPQ3OBK46PQVX2DQJIfblurPSy/319v1/5G2wzfRtMoRwAgA3GjvzOUI1AAAAAElFTkSuQmCC"/>
+</svg>
