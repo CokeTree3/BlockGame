@@ -9,7 +9,27 @@ import processing.core.{PApplet, PConstants}
 
 class GameBase   extends PApplet {
 
-  // ===Processing Wrappers & Abstractions===
+  def getBtnMap(screenArea: Rectangle, state: Int): Map[String, Rectangle] = {
+    val menuButtons = Map[String, Rectangle](
+      "Infinite Play" -> Rectangle(Coordinate(screenArea.centerX - 125, screenArea.heightThirds(2) - 20), 250, 40),
+      "Custom Game" -> Rectangle(Coordinate(screenArea.centerX - 125, screenArea.heightThirds(2) + 50), 250, 40),
+      "Settings" -> Rectangle(Coordinate(screenArea.centerX - 125, screenArea.heightThirds(2) + 120), 120, 40),
+      "Quit" -> Rectangle(Coordinate(screenArea.centerX + 5, screenArea.heightThirds(2) + 120), 115, 40))
+
+    val settingsButtons = Map[String, Rectangle](
+      "Reset Score" -> Rectangle(Coordinate(screenArea.left + 60, screenArea.top + 100), 200, 40),
+      "Colour Theme" -> Rectangle(Coordinate(screenArea.left + 60, screenArea.top + 170), 200, 40),
+      "X" -> Rectangle(Coordinate(screenArea.right - 95, screenArea.top + 60), 35))
+
+    val gameButtons = Map[String, Rectangle](
+      "Pause" -> Rectangle(Coordinate(screenArea.right - 55, screenArea.top + 20), 35))
+
+    state match {
+      case 0 => menuButtons
+      case 1 => gameButtons
+      case 2 => settingsButtons
+    }
+  }
 
 
   def drawTextCentered(string: String, size: Float, center: Coordinate, outlineColor: Color = Black): Unit = {

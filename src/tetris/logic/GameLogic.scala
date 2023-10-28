@@ -42,6 +42,10 @@ class GameLogic(val randomGen: RandomGenerator) {
   def getBlockCells: Seq[Point] = gameState.b.l
 
   def getScore: String = gameState.score.toString
+  def resetGame(): Unit = {
+    gameState = GameState(generateBlock())
+    isGameOver = false
+  }
 
   private def checkPlacement(block: List[Point]):Boolean = if(block.forall(p => gridDims.allPointsInside.contains(p) && getCellType(p) == Empty)) true else false
 

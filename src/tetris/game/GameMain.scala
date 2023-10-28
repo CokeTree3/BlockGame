@@ -13,30 +13,34 @@ import tetris.logic.{Point => GridCoordinate}
 
 class GameMain extends GameBase {
 
-  private var dispMainMenu = true
-  private var dispSettingMenu = false
+  private var dispState = 0
   private var mouseActive = false
   private var gameLogic = GameLogic()
   val gridDims: Dimensions = gameLogic.gridDims
   private val heightInPixels = 800
   private val widthInPixels = heightInPixels - heightInPixels / 3
   val screenArea: Rectangle = Rectangle(Coordinate(0, 0), widthInPixels.toFloat, heightInPixels.toFloat)
-  val gameField: Rectangle = Rectangle(Coordinate((widthInPixels / 8).toFloat, (heightInPixels / 10).toFloat), (widthInPixels - (widthInPixels / 4)).toFloat)
-
-  private val btnMap = Map[String, Rectangle](
-    "Infinite Play" -> Rectangle(Coordinate(screenArea.centerX - 125, screenArea.heightThirds(2) - 20), 250, 40),
-    "Custom Game" -> Rectangle(Coordinate(screenArea.centerX - 125, screenArea.heightThirds(2) + 50), 250, 40),
-    "Settings" -> Rectangle(Coordinate(screenArea.centerX - 125, screenArea.heightThirds(2) + 120), 120, 40),
-    "Quit" -> Rectangle(Coordinate(screenArea.centerX + 5, screenArea.heightThirds(2) + 120), 115, 40))
+  private val gameField: Rectangle = Rectangle(Coordinate((widthInPixels / 8).toFloat, (heightInPixels / 10).toFloat), (widthInPixels - (widthInPixels / 4)).toFloat)
 
   private var widthPerCell: Float = gameField.width / gridDims.width
   private var heightPerCell: Float = widthPerCell
 
   override def draw(): Unit = {
-
-    if (dispMainMenu) drawMainMenu()
+    if (gameLogic.isGameOver) dispState = 4
+    if (dispState == 0) drawMainMenu()
+    else if(dispState == 2) drawSettingsMenu()
+    else if(dispState == 4) drawGameOverScreen()
     else drawGameField()
-    if (gameLogic.isGameOver) drawGameOverScreen()
+  }
+
+  def drawSettingsMenu(): Unit = {
+    setBackground(Color.DarkBlue)
+    setFillColor(Color.DarkGrey)
+
+    drawRectangle(Rectangle(Coordinate(screenArea.left + 40, screenArea.top + 40), screenArea.width - 80, screenArea.height - 80), 70f)
+    setFillColor(Color.White)
+
+    drawBtns(getBtnMap(screenArea, dispState))
   }
 
   def drawMainMenu(): Unit = {
@@ -44,14 +48,12 @@ class GameMain extends GameBase {
     setBackground(Color.DarkBlue)
     drawTextCentered("Game Menu", 50, Coordinate(gameField.centerX, gameField.heightThirds(1)))
 
-    btnMap.foreach(btn => if(isMouseOver(btn._2)) drawRectangle(btn._2.grow(1.13f), 20) else drawRectangle(btn._2, 20))
-    setFillColor(Color.Black)
-    btnMap.foreach(btn => drawTextCentered(btn._1, 20, Coordinate(btn._2.centerX, btn._2.centerY + 7), Color.White))
+    drawBtns(getBtnMap(screenArea, dispState))
   }
 
   def drawGameOverScreen(): Unit = {
     setFillColor(Color.Red)
-    drawTextCentered("GAME OVER!", 20, screenArea.center)
+    drawTextCentered("GAME OVER!", 40, screenArea.center)
   }
 
   def drawGameField(): Unit = {
@@ -64,7 +66,7 @@ class GameMain extends GameBase {
     gridDims.allPointsInside.foreach(p => drawCell(getCell(p), gameLogic.getCellType(p)))
 
     for (i <- 0 to gridDims.width / 3) {
-      drawLine(Coordinate((gameField.widthThirds(i)) + gameField.left, gameField.top), Coordinate(gameField.widthThirds(i) + gameField.left, gameField.bottom))
+      drawLine(Coordinate(gameField.widthThirds(i) + gameField.left, gameField.top), Coordinate(gameField.widthThirds(i) + gameField.left, gameField.bottom))
     }
     for (i <- 0 to gridDims.height / 3) {
       drawLine(Coordinate(gameField.left, gameField.heightThirds(i) + gameField.top), Coordinate(gameField.right, gameField.heightThirds(i) + gameField.top))
@@ -79,6 +81,12 @@ class GameMain extends GameBase {
     }
 
     drawTextCentered("Score: " + gameLogic.getScore,20, Coordinate(gameField.centerX, gameField.top - 30))
+  }
+
+  private def drawBtns(btnMap: Map[String, Rectangle]): Unit = {
+    btnMap.foreach(btn => if (isMouseOver(btn._2)) drawRectangle(btn._2.grow(1.13f), 20) else drawRectangle(btn._2, 20))
+    setFillColor(Color.Black)
+    btnMap.foreach(btn => drawTextCentered(btn._1, 20, Coordinate(btn._2.centerX, btn._2.centerY + 7), Color.White))
   }
 
   private def drawCell(area: Rectangle, fill: CellType, rad: Float = 2f): Unit = {
@@ -108,8 +116,8 @@ class GameMain extends GameBase {
   override def keyPressed(event: KeyEvent): Unit = {
 
     event.getKeyCode match {
-      case VK_ENTER => dispMainMenu = false
-      case VK_P => dispMainMenu = true
+      case VK_ENTER => dispState = 1
+      case VK_P => dispState = 0
       case _ => ()
     }
   }
@@ -117,16 +125,22 @@ class GameMain extends GameBase {
   private def getMouseCoordinate: Coordinate = Coordinate(mouseX.toFloat, mouseY.toFloat)
 
   override def mouseDragged(event: MouseEvent): Unit = {
-    if(!dispMainMenu && getBlockArea().exists(cell => cell.contains(getMouseCoordinate))) mouseActive = true
+    if(dispState == 1 && getBlockArea().exists(cell => cell.contains(getMouseCoordinate))) mouseActive = true
   }
 
   override def mouseClicked(): Unit = {
-    if(dispMainMenu){
-      val mouseLoc = getMouseCoordinate
-      if(btnMap("Infinite Play").contains(mouseLoc)) dispMainMenu = false
-      else if (btnMap("Custom Game").contains(mouseLoc)) dispMainMenu = false
-      else if (btnMap("Settings").contains(mouseLoc)) dispSettingMenu = true
-      else if (btnMap("Quit").contains(mouseLoc)) System.exit(0)
+    val mouseLoc = getMouseCoordinate
+    val map = getBtnMap(screenArea, dispState)
+    if(dispState == 0){
+      if(map("Infinite Play").contains(mouseLoc)) dispState = 1
+      else if (map("Custom Game").contains(mouseLoc)) dispState = 1
+      else if (map("Settings").contains(mouseLoc)) dispState = 2
+      else if (map("Quit").contains(mouseLoc)) System.exit(0)
+    }
+    else if(dispState == 2){
+      if (map("Reset Score").contains(mouseLoc)) gameLogic.resetGame()
+      else if (map("Colour Theme").contains(mouseLoc)) ???                          // TODO change theme
+      else if (map("X").contains(mouseLoc)) dispState = 0
     }
   }
 
