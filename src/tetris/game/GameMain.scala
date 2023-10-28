@@ -11,12 +11,19 @@ import tetris.logic._
 import tetris.game.GameMain._
 import tetris.logic.{Point => GridCoordinate}
 
+import scala.io.Source
+
 class GameMain extends GameBase {
 
   private var dispState = 0
   private var imgList = List[PImage]()
+  private val settingsFile = Source.fromFile("./res/settings.ini")
+  private val settingsData = settingsFile.getLines().toList.map(_.split("= ")(1))
+  settingsFile.close()
+
   private var mouseActive = false
-  private var gameLogic = GameLogic()
+  private val gameLogic = GameLogic()
+
   val gridDims: Dimensions = gameLogic.gridDims
   private val heightInPixels = 800
   private val widthInPixels = heightInPixels - heightInPixels / 3
@@ -47,12 +54,13 @@ class GameMain extends GameBase {
     setFillColor(Color.White)
     setBackground(Color.DarkBlue)
     drawTextCentered("Game Menu", 50, Coordinate(gameField.centerX, gameField.heightThirds(1)))
+    drawTextCentered("Best Score: " + settingsData.head,  25, Coordinate(gameField.centerX, gameField.centerY + 20))
 
     drawBtns(getBtnMap(screenArea, dispState))
   }
 
   def drawGameOverScreen(): Unit = {
-    setFillColor(Color.LightBlue.fade(50f), 100f)
+    setFillColor(Color.LightBlue.fade(50f), 40f)
     drawRectangle(Rectangle(Coordinate(screenArea.left + 30, screenArea.top + 30), screenArea.width - 60, screenArea.height - 60), 70f)
 
     setFillColor(Color.Red)
@@ -60,8 +68,8 @@ class GameMain extends GameBase {
     setFillColor(Color.White)
     drawTextCentered("Score: " + gameLogic.getScore, 40, Coordinate(screenArea.centerX, gameField.heightThirds(1) + gameField.top))
 
-    setFillColor(Color.Black)
-    setStroke(Color.Black)
+    showImage(imgList(1), getBtnMap(screenArea, dispState)("_sadFace"))
+
     drawBtns(getBtnMap(screenArea, dispState))
   }
 
@@ -69,7 +77,7 @@ class GameMain extends GameBase {
     setBackground(Color.DarkCyan)
     widthPerCell = gameField.width / gridDims.width
     heightPerCell = widthPerCell
-    println(widthPerCell)
+
     setFillColor(Color.White)
     drawRectangle(gameField, 0f)
 
@@ -92,16 +100,12 @@ class GameMain extends GameBase {
 
     drawTextCentered("Score: " + gameLogic.getScore,20, Coordinate(gameField.centerX, gameField.top - 30))
 
-    val rect = getBtnMap(screenArea, dispState)("||")
-    image(imgList.head, rect.left, rect.top, rect.width, rect.height)
+    showImage(imgList.head, getBtnMap(screenArea, dispState)("_pause"))
 
-  }
+    if(gameLogic.isGameOver) {
 
-  private def drawBtns(btnMap: Map[String, Rectangle], fillCol: Color = Color.Black, strokeCol: Color = Color.White): Unit = {
-    setFillColor(strokeCol)
-    btnMap.foreach(btn => if (isMouseOver(btn._2)) drawRectangle(btn._2.grow(1.13f), 20) else drawRectangle(btn._2, 20))
-    setFillColor(fillCol)
-    btnMap.foreach(btn => drawTextCentered(btn._1, 20, Coordinate(btn._2.centerX, btn._2.centerY + 7), strokeCol))
+      dispState = 3
+    }
   }
 
   private def drawCell(area: Rectangle, fill: CellType, rad: Float = 2f): Unit = {
@@ -109,19 +113,15 @@ class GameMain extends GameBase {
     drawRectangle(area, rad)
   }
 
-  private def getBlockArea(centerCoordinate: Coordinate = Coordinate(screenArea.centerX, screenArea.heightThirds(2) + 75)): Seq[Rectangle] = {
-    gameLogic.getBlockCells.map(cell => Rectangle(Coordinate((centerCoordinate.x - widthPerCell / 2) + widthPerCell * cell.x, (centerCoordinate.y - heightPerCell / 2) + heightPerCell * cell.y), widthPerCell, heightPerCell))
+  private def getBlockArea(centerCoordinate: Coordinate = Coordinate(screenArea.centerX, screenArea.heightThirds(2) + 75), scale: Float = 1f): Seq[Rectangle] = {
+    gameLogic.getBlockCells.map(cell =>
+      Rectangle(Coordinate((centerCoordinate.x - (widthPerCell * scale) / 2) + (widthPerCell * scale) * cell.x, (centerCoordinate.y - (heightPerCell * scale) / 2) + (heightPerCell * scale) * cell.y), widthPerCell * scale))
   }
 
   private def drawMovableBlock(centerCoordinate: Coordinate = Coordinate(screenArea.centerX, screenArea.heightThirds(2) + 75)): Unit = {
-    val s = getBlockArea(centerCoordinate)
-    if(s.exists(isMouseOver)){
-      widthPerCell = gameField.width * 1.09f / gridDims.width
-      heightPerCell = widthPerCell
-    }
-    getBlockArea(centerCoordinate).foreach(cell => drawCell(cell, FullCell, 5f))
-    if(gameLogic.isGameOver) dispState = 3
+    getBlockArea(centerCoordinate, 1.09f).foreach(cell => drawCell(cell, FullCell, 5f))
   }
+
 
   /** Method that calls handlers for different key press events.
    * You may add extra functionality for other keys here.
@@ -139,8 +139,6 @@ class GameMain extends GameBase {
     }
   }
 
-  private def getMouseCoordinate: Coordinate = Coordinate(mouseX.toFloat, mouseY.toFloat)
-
   override def mouseDragged(event: MouseEvent): Unit = {
     if(dispState == 1 && getBlockArea().exists(cell => cell.contains(getMouseCoordinate))) mouseActive = true
   }
@@ -155,7 +153,7 @@ class GameMain extends GameBase {
       else if (map("Quit").contains(mouseLoc)) System.exit(0)
     }
     else if(dispState == 1){
-      if(map("||").contains(mouseLoc)) dispState = 0
+      if(map("_pause").contains(mouseLoc)) dispState = 0
 
     }
     else if(dispState == 2){
@@ -175,8 +173,6 @@ class GameMain extends GameBase {
     }
   }
 
-  private def isMouseOver(area: Rectangle): Boolean = area.contains(getMouseCoordinate)
-
   override def mouseReleased(): Unit = {
     val mousePoint = getMouseCoordinate
     if(mouseActive && gameField.contains(mousePoint)) gameLogic.placeBlock(Point(((mouseX - gameField.left) / (gameField.width/gridDims.width)).toInt, ((mouseY - gameField.top) / (gameField.height / gridDims.height)).toInt))
@@ -191,6 +187,7 @@ class GameMain extends GameBase {
   override def setup(): Unit = {
     text("", 0, 0)
     imgList = imgList.appended(loadImage("./res/pauseMenuImg.png"))
+    imgList = imgList.appended(loadImage("./res/sadFace.png"))
   }
 }
 

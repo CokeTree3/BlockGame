@@ -5,7 +5,7 @@ package engine
 
 import engine.graphics.Color.Black
 import engine.graphics.{Color, Coordinate, Rectangle}
-import processing.core.{PApplet, PConstants}
+import processing.core.{PApplet, PConstants, PImage}
 
 class GameBase   extends PApplet {
 
@@ -22,11 +22,12 @@ class GameBase   extends PApplet {
       "X" -> Rectangle(Coordinate(screenArea.right - 95, screenArea.top + 60), 35))
 
     val gameButtons = Map[String, Rectangle](
-      "||" -> Rectangle(Coordinate(screenArea.right - 55, screenArea.top + 10), 45))
+      "_pause" -> Rectangle(Coordinate(screenArea.right - 55, screenArea.top + 10), 45))
 
     val gameOverButtons = Map[String, Rectangle](
       "Restart" -> Rectangle(Coordinate(screenArea.left + 60, screenArea.heightThirds(2) - 20), 200, 50),
-      "Main Menu" -> Rectangle(Coordinate(screenArea.right - 260, screenArea.heightThirds(2) -20), 200, 50))
+      "Main Menu" -> Rectangle(Coordinate(screenArea.right - 260, screenArea.heightThirds(2) -20), 200, 50),
+      "_sadFace" -> Rectangle(Coordinate(screenArea.centerX - 64, screenArea.centerY - 64), 128))
 
     state match {
       case 0 => menuButtons
@@ -35,6 +36,19 @@ class GameBase   extends PApplet {
       case 3 => gameOverButtons
     }
   }
+
+  def drawBtns(btnMap: Map[String, Rectangle], fillCol: Color = Color.Black, strokeCol: Color = Color.White): Unit = {
+    setFillColor(strokeCol)
+    val map = btnMap.filter(btn => !btn._1.startsWith("_"))
+
+    map.foreach(btn => if (isMouseOver(btn._2)) drawRectangle(btn._2.grow(1.13f), 20) else drawRectangle(btn._2, 20))
+    setFillColor(fillCol)
+    map.foreach(btn => drawTextCentered(btn._1, 20, Coordinate(btn._2.centerX, btn._2.centerY + 7), strokeCol))
+  }
+
+  def isMouseOver(area: Rectangle): Boolean = area.contains(getMouseCoordinate)
+
+  def getMouseCoordinate: Coordinate = Coordinate(mouseX.toFloat, mouseY.toFloat)
 
 
   def drawTextCentered(string: String, size: Float, center: Coordinate, outlineColor: Color = Black): Unit = {
@@ -78,5 +92,8 @@ class GameBase   extends PApplet {
 
   def setBackground(c: Color): Unit =
     background(c.red, c.green, c.blue, c.alpha)
+
+  def showImage(p: PImage, area:Rectangle): Unit =
+    image(p, area.left, area.top, area.width, area.height)
 
 }
