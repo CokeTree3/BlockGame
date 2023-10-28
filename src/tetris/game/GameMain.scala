@@ -26,10 +26,9 @@ class GameMain extends GameBase {
   private var heightPerCell: Float = widthPerCell
 
   override def draw(): Unit = {
-    if (gameLogic.isGameOver) dispState = 4
     if (dispState == 0) drawMainMenu()
     else if(dispState == 2) drawSettingsMenu()
-    else if(dispState == 4) drawGameOverScreen()
+    else if(dispState == 3) drawGameOverScreen()
     else drawGameField()
   }
 
@@ -52,8 +51,15 @@ class GameMain extends GameBase {
   }
 
   def drawGameOverScreen(): Unit = {
+    setFillColor(Color.LightBlue.fade(50f), 100f)
+    drawRectangle(Rectangle(Coordinate(screenArea.left + 30, screenArea.top + 30), screenArea.width - 60, screenArea.height - 60), 70f)
+
     setFillColor(Color.Red)
-    drawTextCentered("GAME OVER!", 40, screenArea.center)
+    drawTextCentered("GAME OVER!", 40, Coordinate(screenArea.centerX, gameField.heightThirds(1)))
+    setFillColor(Color.White)
+    drawTextCentered("Score: " + gameLogic.getScore, 40, Coordinate(screenArea.centerX, gameField.heightThirds(1) + gameField.top))
+
+    drawBtns(getBtnMap(screenArea, dispState))
   }
 
   def drawGameField(): Unit = {
@@ -81,6 +87,7 @@ class GameMain extends GameBase {
     }
 
     drawTextCentered("Score: " + gameLogic.getScore,20, Coordinate(gameField.centerX, gameField.top - 30))
+
   }
 
   private def drawBtns(btnMap: Map[String, Rectangle]): Unit = {
@@ -105,6 +112,7 @@ class GameMain extends GameBase {
       heightPerCell = widthPerCell
     }
     getBlockArea(centerCoordinate).foreach(cell => drawCell(cell, FullCell, 5f))
+    if(gameLogic.isGameOver) dispState = 3
   }
 
   /** Method that calls handlers for different key press events.
@@ -118,6 +126,7 @@ class GameMain extends GameBase {
     event.getKeyCode match {
       case VK_ENTER => dispState = 1
       case VK_P => dispState = 0
+      case VK_C => dispState = 3
       case _ => ()
     }
   }
@@ -141,6 +150,16 @@ class GameMain extends GameBase {
       if (map("Reset Score").contains(mouseLoc)) gameLogic.resetGame()
       else if (map("Colour Theme").contains(mouseLoc)) ???                          // TODO change theme
       else if (map("X").contains(mouseLoc)) dispState = 0
+    }
+    else if (dispState == 3) {
+      if (map("Restart").contains(mouseLoc)) {
+        dispState = 1
+        gameLogic.resetGame()
+      }
+      else if (map("Main Menu").contains(mouseLoc)) {
+        dispState = 0
+        gameLogic.resetGame()
+      }
     }
   }
 
