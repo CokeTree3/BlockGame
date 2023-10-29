@@ -3,6 +3,8 @@
 
 package engine.graphics
 
+import tetris.game.GameMain
+
 case class Rectangle(leftUp: Coordinate, width: Float, height: Float) {
   def top: Float = leftUp.y
   def bottom: Float = top + height

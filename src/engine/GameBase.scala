@@ -1,13 +1,16 @@
-// DO NOT MODIFY FOR BASIC SUBMISSION
-// scalastyle:off
-
 package engine
 
-import engine.graphics.Color.Black
-import engine.graphics.{Color, Coordinate, Rectangle}
+import engine.graphics.{Color, Coordinate, Rectangle, ColorTheme}
 import processing.core.{PApplet, PConstants, PImage}
 
 class GameBase   extends PApplet {
+
+  def getColorTheme(variation: String): Map[String, Color] = {
+    variation match {
+      case "default" => ColorTheme.lightTheme
+      case "dark" => ColorTheme.darkTheme
+    }
+  }
 
   def getBtnMap(screenArea: Rectangle, state: Int): Map[String, Rectangle] = {
     val menuButtons = Map[String, Rectangle](
@@ -37,21 +40,21 @@ class GameBase   extends PApplet {
     }
   }
 
-  def drawBtns(btnMap: Map[String, Rectangle], fillCol: Color = Color.Black, strokeCol: Color = Color.White): Unit = {
-    setFillColor(strokeCol)
+  def drawBtns(btnMap: Map[String, Rectangle], fillCol: Color, textCol: Color): Unit = {
+    setFillColor(fillCol)
     val map = btnMap.filter(btn => !btn._1.startsWith("_"))
 
     map.foreach(btn => if (isMouseOver(btn._2)) drawRectangle(btn._2.grow(1.13f), 20) else drawRectangle(btn._2, 20))
-    setFillColor(fillCol)
-    map.foreach(btn => drawTextCentered(btn._1, 20, Coordinate(btn._2.centerX, btn._2.centerY + 7), strokeCol))
+    setFillColor(textCol)
+    map.foreach(btn => drawTextCentered(btn._1, 20, Coordinate(btn._2.centerX, btn._2.centerY + 7), fillCol))
   }
 
-  def isMouseOver(area: Rectangle): Boolean = area.contains(getMouseCoordinate)
+  private def isMouseOver(area: Rectangle): Boolean = area.contains(getMouseCoordinate)
 
   def getMouseCoordinate: Coordinate = Coordinate(mouseX.toFloat, mouseY.toFloat)
 
 
-  def drawTextCentered(string: String, size: Float, center: Coordinate, outlineColor: Color = Black): Unit = {
+  def drawTextCentered(string: String, size: Float, center: Coordinate, outlineColor: Color = Color.Black): Unit = {
     val (x, y) = (center.x, center.y-(size/2))
     textAlign(PConstants.CENTER, PConstants.CENTER)
     textSize(size)
@@ -77,18 +80,14 @@ class GameBase   extends PApplet {
     strokeWeight(2)
     line(p1.x,p1.y, p2.x,p2.y )
     strokeWeight(1)
-
   }
 
   def drawRectangle(r: Rectangle, rad: Float = 5f): Unit = {
     rect(r.left, r.top, r.width, r.height, rad)
   }
 
-  def setFillColor(c: Color, alpha: Float = 255f): Unit =
-    fill(c.red, c.green, c.blue, alpha)
-
-  def setStroke(c: Color): Unit =
-    stroke(c.red, c.green, c.blue)
+  def setFillColor(c: Color): Unit =
+    fill(c.red, c.green, c.blue, c.alpha)
 
   def setBackground(c: Color): Unit =
     background(c.red, c.green, c.blue, c.alpha)

@@ -19,17 +19,17 @@ class GameMain extends GameBase {
   private var dispState = 0
   private var imgList = List[PImage]()
   private var settingsData = readSettings()
+  private var colorTheme = Map[String, Color]()
 
   private var mouseActive = false
   private val gameLogic = GameLogic()
 
-  val gridDims: Dimensions = gameLogic.gridDims
   private val heightInPixels = 800
   private val widthInPixels = heightInPixels - heightInPixels / 3
-  val screenArea: Rectangle = Rectangle(Coordinate(0, 0), widthInPixels.toFloat, heightInPixels.toFloat)
+  private val screenArea: Rectangle = Rectangle(Coordinate(0, 0), widthInPixels.toFloat, heightInPixels.toFloat)
   private val gameField: Rectangle = Rectangle(Coordinate((widthInPixels / 8).toFloat, (heightInPixels / 10).toFloat), (widthInPixels - (widthInPixels / 4)).toFloat)
 
-  private val widthPerCell: Float = gameField.width / gridDims.width
+  private val widthPerCell: Float = gameField.width / gameLogic.gridDims.width
   private val heightPerCell: Float = widthPerCell
 
   override def draw(): Unit = {
@@ -40,64 +40,62 @@ class GameMain extends GameBase {
   }
 
   private def drawSettingsMenu(): Unit = {
-    setBackground(Color.DarkBlue)
-    setFillColor(Color.DarkGrey)
+    setBackground(colorTheme("menuBackground"))
+    setFillColor(colorTheme("settingsBackground"))
 
     drawRectangle(Rectangle(Coordinate(screenArea.left + 40, screenArea.top + 40), screenArea.width - 80, screenArea.height - 80), 70f)
-    setFillColor(Color.White)
+    setFillColor(colorTheme("button"))
 
-    drawBtns(getBtnMap(screenArea, dispState))
+    drawBtns(getBtnMap(screenArea, dispState), colorTheme("button"), colorTheme("buttonText"))
   }
 
   private def drawMainMenu(): Unit = {
-    setFillColor(Color.White)
-    setBackground(Color.DarkBlue)
+    setFillColor(colorTheme("button"))
+    setBackground(colorTheme("menuBackground"))
     drawTextCentered("Game Menu", 50, Coordinate(gameField.centerX, gameField.heightThirds(1)))
     drawTextCentered("Best Score: " + settingsData.head.split("= ")(1),  25, Coordinate(gameField.centerX, gameField.centerY + 20))
 
-    drawBtns(getBtnMap(screenArea, dispState))
+    drawBtns(getBtnMap(screenArea, dispState), colorTheme("button"), colorTheme("buttonText"))
   }
 
   private def drawGameOverScreen(): Unit = {
-    setFillColor(Color.LightBlue.fade(50f), 40f)
+    setFillColor(colorTheme("gameBlock").fade(50f))
     drawRectangle(Rectangle(Coordinate(screenArea.left + 30, screenArea.top + 30), screenArea.width - 60, screenArea.height - 60), 70f)
 
     setFillColor(Color.Red)
     drawTextCentered("GAME OVER!", 40, Coordinate(screenArea.centerX, gameField.heightThirds(1)))
-    setFillColor(Color.White)
+    setFillColor(colorTheme("button"))
     drawTextCentered("Score: " + gameLogic.getScore, 40, Coordinate(screenArea.centerX, gameField.heightThirds(1) + gameField.top))
 
     showImage(imgList(1), getBtnMap(screenArea, dispState)("_sadFace"))
-
-    drawBtns(getBtnMap(screenArea, dispState))
+    drawBtns(getBtnMap(screenArea, dispState), colorTheme("button"), colorTheme("buttonText"))
   }
 
   private def drawGameScene(): Unit = {
-    setBackground(Color.DarkCyan)
+    setBackground(colorTheme("gameBackground"))
     drawGameField()
 
     if(mouseActive && !gameLogic.isGameOver)drawMovableBlock(getMouseCoordinate)
     else drawMovableBlock()
 
     drawTextCentered("Score: " + gameLogic.getScore,20, Coordinate(gameField.centerX, gameField.top - 30))
-
     showImage(imgList.head, getBtnMap(screenArea, dispState)("_pause"))
 
     if(gameLogic.isGameOver) {
-      if(gameLogic.getScore.toInt > settingsData.head.split("= ")(1).toInt) updateBestScore(gameLogic.getScore.toInt)
+      if(gameLogic.getScore.toInt > settingsData.head.split("= ")(1).toInt) updateSettings(gameLogic.getScore, "Score")
       dispState = 3
     }
   }
 
   private def drawGameField(): Unit = {
-    setFillColor(Color.White)
+    setFillColor(colorTheme("gameEmpty"))
     drawRectangle(gameField, 0f)
-    gridDims.allPointsInside.foreach(p => drawCell(getCell(p), gameLogic.getCellType(p)))
+    gameLogic.gridDims.allPointsInside.foreach(p => drawCell(getCell(p), gameLogic.getCellType(p)))
 
-    for (i <- 0 to gridDims.width / 3) {
+    for (i <- 0 to gameLogic.gridDims.width / 3) {
       drawLine(Coordinate(gameField.widthThirds(i) + gameField.left, gameField.top), Coordinate(gameField.widthThirds(i) + gameField.left, gameField.bottom))
     }
-    for (i <- 0 to gridDims.height / 3) {
+    for (i <- 0 to gameLogic.gridDims.height / 3) {
       drawLine(Coordinate(gameField.left, gameField.heightThirds(i) + gameField.top), Coordinate(gameField.right, gameField.heightThirds(i) + gameField.top))
     }
 
@@ -108,7 +106,7 @@ class GameMain extends GameBase {
   }
 
   private def drawCell(area: Rectangle, fill: CellType, rad: Float = 2f): Unit = {
-    if (fill != Empty) setFillColor(Color.LightBlue) else setFillColor(Color.White)
+    if (fill != Empty) setFillColor(colorTheme("gameBlock")) else setFillColor(colorTheme("gameEmpty"))
     drawRectangle(area, rad)
   }
 
@@ -156,8 +154,11 @@ class GameMain extends GameBase {
 
     }
     else if(dispState == 2){
-      if (map("Reset Score").contains(mouseLoc)) gameLogic.resetGame()
-      else if (map("Colour Theme").contains(mouseLoc)) ???                          // TODO change theme
+      if (map("Reset Score").contains(mouseLoc)) updateSettings("0", "Score")
+      else if (map("Colour Theme").contains(mouseLoc)) {
+        if (settingsData(1).split("= ")(1) == "default") updateSettings("dark", "Theme") else updateSettings("default", "Theme")
+        colorTheme = getColorTheme(settingsData(1).split("= ")(1))
+      }
       else if (map("X").contains(mouseLoc)) dispState = 0
     }
     else if (dispState == 3) {
@@ -174,17 +175,16 @@ class GameMain extends GameBase {
 
   override def mouseReleased(): Unit = {
     val mousePoint = getMouseCoordinate
-    if(mouseActive && gameField.contains(mousePoint)) gameLogic.placeBlock(Point(((mouseX - gameField.left) / (gameField.width/gridDims.width)).toInt, ((mouseY - gameField.top) / (gameField.height / gridDims.height)).toInt))
+    if(mouseActive && gameField.contains(mousePoint)) gameLogic.placeBlock(Point(((mouseX - gameField.left) / widthPerCell).toInt, ((mouseY - gameField.top) / heightPerCell).toInt))
     mouseActive = false
   }
 
-  private def updateBestScore(newVal: Int): Unit = {
+  private def updateSettings(newVal: String, cont: String): Unit = {
     val tempFile = new File("./res/tmp.ini")
     new File("./res/settings.ini").delete()
 
     val writer = new PrintWriter(tempFile)
-    writer.println(settingsData.head.dropRight(1) + newVal)
-    settingsData.tail.foreach(writer.println)
+    settingsData.foreach(line => if (line.contains(cont)) writer.println(line.split(" = ")(0) + " = " + newVal) else writer.println(line))
     writer.close()
 
     tempFile.renameTo(new File("./res/settings.ini"))
@@ -204,9 +204,10 @@ class GameMain extends GameBase {
   }
 
   override def setup(): Unit = {
-    text("", 0, 0)
+    colorTheme = getColorTheme(settingsData(1).split("= ")(1))
     imgList = imgList.appended(loadImage("./res/pauseMenuImg.png"))
     imgList = imgList.appended(loadImage("./res/sadFace.png"))
+    text("", 0, 0)
   }
 }
 
@@ -215,5 +216,4 @@ object GameMain {
   def main(args:Array[String]): Unit = {
     PApplet.main("tetris.game.GameMain")
   }
-
 }
