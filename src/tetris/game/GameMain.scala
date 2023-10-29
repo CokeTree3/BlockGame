@@ -4,11 +4,10 @@ import java.awt.event
 import java.awt.event.KeyEvent._
 import engine.GameBase
 import engine.graphics.{Color, Coordinate, Rectangle}
-import processing.core.{PApplet, PConstants, PImage, PShape}
+import processing.core.{PApplet, PImage}
 import processing._
 import processing.event.{KeyEvent, MouseEvent}
 import tetris.logic._
-import tetris.game.GameMain._
 import tetris.logic.{Point => GridCoordinate}
 
 import java.io.{File, PrintWriter}
@@ -130,19 +129,11 @@ class GameMain extends GameBase {
     getBlockArea(centerCoordinate, 1.09f).foreach(cell => drawCell(cell, FullCell(), 5f))
   }
 
-
-  /** Method that calls handlers for different key press events.
-   * You may add extra functionality for other keys here.
-   * See [[event.KeyEvent]] for all defined keycodes.
-   *
-   * @param event The key press event to handle
-   */
   override def keyPressed(event: KeyEvent): Unit = {
 
     event.getKeyCode match {
-      case VK_ENTER => dispState = 1
       case VK_P => dispState = 0
-      case VK_C => dispState = 3
+      case VK_ESCAPE => System.exit(0)
       case _ => ()
     }
   }
