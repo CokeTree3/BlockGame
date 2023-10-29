@@ -106,8 +106,16 @@ class GameMain extends GameBase {
   }
 
   private def drawCell(area: Rectangle, fill: CellType, rad: Float = 2f): Unit = {
-    if (fill != Empty) setFillColor(colorTheme("gameBlock")) else setFillColor(colorTheme("gameEmpty"))
+    fill match {
+      case Empty() => setFillColor(colorTheme("gameEmpty"))
+      case _ => setFillColor(colorTheme("gameBlock"))
+    }
     drawRectangle(area, rad)
+    fill match {
+      case DoubleCell() => drawTextCentered("2",area.height/2, area.center)
+      case TripleCell() => drawTextCentered("3",area.height/2, area.center)
+      case _ => ()
+    }
   }
 
   private def getBlockArea(centerCoordinate: Coordinate = Coordinate(screenArea.centerX, screenArea.heightThirds(2) + 75), scale: Float = 1f): Seq[Rectangle] = {
@@ -116,7 +124,7 @@ class GameMain extends GameBase {
   }
 
   private def drawMovableBlock(centerCoordinate: Coordinate = Coordinate(screenArea.centerX, screenArea.heightThirds(2) + 75)): Unit = {
-    getBlockArea(centerCoordinate, 1.09f).foreach(cell => drawCell(cell, FullCell, 5f))
+    getBlockArea(centerCoordinate, 1.09f).foreach(cell => drawCell(cell, FullCell(), 5f))
   }
 
 

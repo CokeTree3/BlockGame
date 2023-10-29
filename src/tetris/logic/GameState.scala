@@ -10,9 +10,9 @@ case class GameState(gameBoard: Seq[Seq[CellType]], b: Block, score:Int) {
 
   def getColumn(index: Int):Seq[CellType] = for(row <- gameBoard.indices) yield gameBoard(row)(index)
 
-  def updateColumn(value:CellType, index: Int): GameState = {
+  def updateColumn(index: Int): GameState = {
     var newBoard = gameBoard
-    for(row <- gameBoard.indices)newBoard = newBoard.updated(row, newBoard(row).updated(index, value))
+    for(row <- gameBoard.indices)newBoard = newBoard.updated(row, newBoard(row).updated(index, newBoard(row)(index).next))
     GameState(newBoard, this.b, this.score)
   }
 
@@ -27,7 +27,7 @@ case class GameState(gameBoard: Seq[Seq[CellType]], b: Block, score:Int) {
 
 object GameState {
   def apply(b: Block): GameState = {
-    val line = Seq.fill(9)(Empty)
+    val line = Seq.fill(9)(Empty())
     new GameState(Seq.fill(9)(line), b, 0)
   }
 }
