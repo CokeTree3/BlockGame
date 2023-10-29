@@ -18,6 +18,7 @@ class GameMain extends GameBase {
   private var colorTheme = Map[String, Color]()
 
   private var mouseActive = false
+  private var (notifShow, notifText) = (8.26f, "")
   private val stdGameLogic = GameLogic()
   private var customGameLogic = GameLogic(getRandomLevel(Random.nextInt(11)))
   private def getGameLogic: GameLogic = if(dispState == 1) stdGameLogic else customGameLogic
@@ -45,6 +46,7 @@ class GameMain extends GameBase {
     setFillColor(colorTheme("button"))
 
     drawBtns(getBtnMap(screenArea, dispState), colorTheme("button"), colorTheme("buttonText"))
+    drawNotif(notifText)
   }
 
   private def drawMainMenu(): Unit = {
@@ -103,6 +105,20 @@ class GameMain extends GameBase {
     }
   }
 
+  private def drawNotif(text: String): Unit = {
+    val d = Math.pow(Math.E, notifShow - Math.E).toFloat
+    if(notifShow < 8.25f) {
+      setFillColor(colorTheme("notification").fade(255 - d))
+      val area = Rectangle(Coordinate(screenArea.centerX - 150, screenArea.bottom - 300), 300, 40)
+      drawRectangle(area, 25)
+
+      setFillColor(colorTheme("buttonText"))
+      drawTextCentered(text, 20, Coordinate(area.centerX, area.centerY + 7))
+
+      notifShow = notifShow + 0.1f
+    }
+  }
+
   private def drawCell(area: Rectangle, fill: CellType, rad: Float = 2f): Unit = {
     fill match {
       case Empty() => setFillColor(colorTheme("gameEmpty"))
@@ -110,8 +126,8 @@ class GameMain extends GameBase {
     }
     drawRectangle(area, rad)
     fill match {
-      case DoubleCell() => drawTextCentered("2",area.height/2, area.center)
-      case TripleCell() => drawTextCentered("3",area.height/2, area.center)
+      case DoubleCell() => drawTextCentered("2",area.height/2, Coordinate(area.centerX, area.centerY + 5))
+      case TripleCell() => drawTextCentered("3",area.height/2, Coordinate(area.centerX, area.centerY + 5))
       case _ => ()
     }
   }
@@ -152,12 +168,20 @@ class GameMain extends GameBase {
 
     }
     else if(dispState == 2){
-      if (map("Reset Score").contains(mouseLoc)) updateSettings("0", "Score")
+      if (map("Reset Score").contains(mouseLoc)) {
+        notifText = "Score has been reset"
+        updateSettings("0", "Score")
+      }
       else if (map("Colour Theme").contains(mouseLoc)) {
+        notifText = "Set theme "
         if (settingsData(1).split("= ")(1) == "default") updateSettings("dark", "Theme") else updateSettings("default", "Theme")
         colorTheme = getColorTheme(settingsData(1).split("= ")(1))
       }
-      else if (map("Reload Level").contains(mouseLoc)) customGameLogic = GameLogic(getRandomLevel(Random.nextInt(3)))
+      else if (map("Reload Level").contains(mouseLoc)) {
+        notifText = "New level loaded"
+        notifShow = 0f
+        customGameLogic = GameLogic(getRandomLevel(Random.nextInt(3)))
+      }
       else if (map("X").contains(mouseLoc)) dispState = 0
     }
     else if (dispState == 3) {
@@ -188,6 +212,8 @@ class GameMain extends GameBase {
 
     tempFile.renameTo(new File("./res/settings.ini"))
     settingsData = readSettings()
+    if(cont == "Theme") notifText = notifText + newVal
+    notifShow = 0f
   }
 
   private def getRandomLevel(count: Int): Seq[Seq[CellType]] = {

@@ -8,7 +8,8 @@ object ColorTheme {
     "button" -> Color.White,
     "buttonText" -> Color.Black,
     "gameEmpty" -> Color.White,
-    "gameBlock" -> Color(61, 177, 209)
+    "gameBlock" -> Color(61, 177, 209),
+    "notification" -> Color( 153, 212, 229)
   )
 
   val darkTheme: Map[String, Color] = Map[String, Color](
@@ -18,6 +19,7 @@ object ColorTheme {
     "button" -> Color.White,
     "buttonText" -> Color.Black,
     "gameEmpty" -> Color(32, 49, 79),
-    "gameBlock" -> Color(134, 179, 194)
+    "gameBlock" -> Color(134, 179, 194),
+    "notification" -> Color(99, 95, 117)
   )
 }

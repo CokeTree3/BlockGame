@@ -57,7 +57,7 @@ class GameBase   extends PApplet {
 
 
   def drawTextCentered(string: String, size: Float, center: Coordinate, outlineColor: Color = Color.Black): Unit = {
-    val (x, y) = (center.x, center.y-(size/2))
+    val (x, y) = (center.x, center.y-(size/1.75f))
     textAlign(PConstants.CENTER, PConstants.CENTER)
     textSize(size)
     drawText(string, Coordinate(x, y), outlineColor)
