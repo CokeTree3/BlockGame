@@ -30,4 +30,6 @@ object GameState {
     val line = Seq.fill(9)(Empty())
     new GameState(Seq.fill(9)(line), b, 0)
   }
+
+  def apply(board: Seq[Seq[CellType]], b: Block): GameState = new GameState(board, b, 0)
 }

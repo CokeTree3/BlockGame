@@ -13,6 +13,7 @@ import tetris.logic.{Point => GridCoordinate}
 
 import java.io.{File, PrintWriter}
 import scala.io.Source
+import scala.util.Random
 
 class GameMain extends GameBase {
 
@@ -22,14 +23,16 @@ class GameMain extends GameBase {
   private var colorTheme = Map[String, Color]()
 
   private var mouseActive = false
-  private val gameLogic = GameLogic()
+  private val stdGameLogic = GameLogic()
+  private var customGameLogic = GameLogic(getRandomLevel(Random.nextInt(3)))
+  private def getGameLogic: GameLogic = if(dispState == 1) stdGameLogic else customGameLogic
 
   private val heightInPixels = 800
   private val widthInPixels = heightInPixels - heightInPixels / 3
   private val screenArea: Rectangle = Rectangle(Coordinate(0, 0), widthInPixels.toFloat, heightInPixels.toFloat)
   private val gameField: Rectangle = Rectangle(Coordinate((widthInPixels / 8).toFloat, (heightInPixels / 10).toFloat), (widthInPixels - (widthInPixels / 4)).toFloat)
 
-  private val widthPerCell: Float = gameField.width / gameLogic.gridDims.width
+  private val widthPerCell: Float = gameField.width / stdGameLogic.gridDims.width
   private val heightPerCell: Float = widthPerCell
 
   override def draw(): Unit = {
@@ -65,7 +68,7 @@ class GameMain extends GameBase {
     setFillColor(Color.Red)
     drawTextCentered("GAME OVER!", 40, Coordinate(screenArea.centerX, gameField.heightThirds(1)))
     setFillColor(colorTheme("button"))
-    drawTextCentered("Score: " + gameLogic.getScore, 40, Coordinate(screenArea.centerX, gameField.heightThirds(1) + gameField.top))
+    drawTextCentered("Score: " + getGameLogic.getScore, 40, Coordinate(screenArea.centerX, gameField.heightThirds(1) + gameField.top))
 
     showImage(imgList(1), getBtnMap(screenArea, dispState)("_sadFace"))
     drawBtns(getBtnMap(screenArea, dispState), colorTheme("button"), colorTheme("buttonText"))
@@ -75,14 +78,14 @@ class GameMain extends GameBase {
     setBackground(colorTheme("gameBackground"))
     drawGameField()
 
-    if(mouseActive && !gameLogic.isGameOver)drawMovableBlock(getMouseCoordinate)
+    if(mouseActive && !getGameLogic.isGameOver)drawMovableBlock(getMouseCoordinate)
     else drawMovableBlock()
 
-    drawTextCentered("Score: " + gameLogic.getScore,20, Coordinate(gameField.centerX, gameField.top - 30))
+    drawTextCentered("Score: " + getGameLogic.getScore,20, Coordinate(gameField.centerX, gameField.top - 30))
     showImage(imgList.head, getBtnMap(screenArea, dispState)("_pause"))
 
-    if(gameLogic.isGameOver) {
-      if(gameLogic.getScore.toInt > settingsData.head.split("= ")(1).toInt) updateSettings(gameLogic.getScore, "Score")
+    if(getGameLogic.isGameOver) {
+      if(getGameLogic.getScore.toInt > settingsData.head.split("= ")(1).toInt) updateSettings(getGameLogic.getScore, "Score")
       dispState = 3
     }
   }
@@ -90,12 +93,12 @@ class GameMain extends GameBase {
   private def drawGameField(): Unit = {
     setFillColor(colorTheme("gameEmpty"))
     drawRectangle(gameField, 0f)
-    gameLogic.gridDims.allPointsInside.foreach(p => drawCell(getCell(p), gameLogic.getCellType(p)))
+    getGameLogic.gridDims.allPointsInside.foreach(p => drawCell(getCell(p), getGameLogic.getCellType(p)))
 
-    for (i <- 0 to gameLogic.gridDims.width / 3) {
+    for (i <- 0 to getGameLogic.gridDims.width / 3) {
       drawLine(Coordinate(gameField.widthThirds(i) + gameField.left, gameField.top), Coordinate(gameField.widthThirds(i) + gameField.left, gameField.bottom))
     }
-    for (i <- 0 to gameLogic.gridDims.height / 3) {
+    for (i <- 0 to getGameLogic.gridDims.height / 3) {
       drawLine(Coordinate(gameField.left, gameField.heightThirds(i) + gameField.top), Coordinate(gameField.right, gameField.heightThirds(i) + gameField.top))
     }
 
@@ -119,7 +122,7 @@ class GameMain extends GameBase {
   }
 
   private def getBlockArea(centerCoordinate: Coordinate = Coordinate(screenArea.centerX, screenArea.heightThirds(2) + 75), scale: Float = 1f): Seq[Rectangle] = {
-    gameLogic.getBlockCells.map(cell =>
+    getGameLogic.getBlockCells.map(cell =>
       Rectangle(Coordinate((centerCoordinate.x - (widthPerCell * scale) / 2) + (widthPerCell * scale) * cell.x, (centerCoordinate.y - (heightPerCell * scale) / 2) + (heightPerCell * scale) * cell.y), widthPerCell * scale))
   }
 
@@ -145,7 +148,7 @@ class GameMain extends GameBase {
   }
 
   override def mouseDragged(event: MouseEvent): Unit = {
-    if(dispState == 1 && getBlockArea().exists(cell => cell.contains(getMouseCoordinate))) mouseActive = true
+    if((dispState == 1 || dispState == 4) && getBlockArea().exists(cell => cell.contains(getMouseCoordinate))) mouseActive = true
   }
 
   override def mouseClicked(): Unit = {
@@ -153,11 +156,11 @@ class GameMain extends GameBase {
     val map = getBtnMap(screenArea, dispState)
     if(dispState == 0){
       if(map("Infinite Play").contains(mouseLoc)) dispState = 1
-      else if (map("Custom Game").contains(mouseLoc)) dispState = 1
+      else if (map("Custom Game").contains(mouseLoc)) dispState = 4
       else if (map("Settings").contains(mouseLoc)) dispState = 2
       else if (map("Quit").contains(mouseLoc)) System.exit(0)
     }
-    else if(dispState == 1){
+    else if(dispState == 1 || dispState == 4){
       if(map("_pause").contains(mouseLoc)) dispState = 0
 
     }
@@ -167,23 +170,24 @@ class GameMain extends GameBase {
         if (settingsData(1).split("= ")(1) == "default") updateSettings("dark", "Theme") else updateSettings("default", "Theme")
         colorTheme = getColorTheme(settingsData(1).split("= ")(1))
       }
+      else if (map("Reload Level").contains(mouseLoc)) customGameLogic = GameLogic(getRandomLevel(Random.nextInt(3)))
       else if (map("X").contains(mouseLoc)) dispState = 0
     }
     else if (dispState == 3) {
       if (map("Restart").contains(mouseLoc)) {
         dispState = 1
-        gameLogic.resetGame()
+        getGameLogic.resetGame()
       }
       else if (map("Main Menu").contains(mouseLoc)) {
         dispState = 0
-        gameLogic.resetGame()
+        getGameLogic.resetGame()
       }
     }
   }
 
   override def mouseReleased(): Unit = {
     val mousePoint = getMouseCoordinate
-    if(mouseActive && gameField.contains(mousePoint)) gameLogic.placeBlock(Point(((mouseX - gameField.left) / widthPerCell).toInt, ((mouseY - gameField.top) / heightPerCell).toInt))
+    if(mouseActive && gameField.contains(mousePoint)) getGameLogic.placeBlock(Point(((mouseX - gameField.left) / widthPerCell).toInt, ((mouseY - gameField.top) / heightPerCell).toInt))
     mouseActive = false
   }
 
@@ -197,6 +201,17 @@ class GameMain extends GameBase {
 
     tempFile.renameTo(new File("./res/settings.ini"))
     settingsData = readSettings()
+  }
+
+  private def getRandomLevel(count: Int): Seq[Seq[CellType]] = {
+    val fields = Source.fromFile("./res/customFields.txt")
+    val data = fields.getLines().slice(11 * count + 1, 11 * count + 10).toList
+    data.map(row => row.map {
+      case '0' => Empty()
+      case '1' => FullCell()
+      case '2' => DoubleCell()
+      case '3' => TripleCell()
+    })
   }
 
   private def readSettings(): List[String] = {

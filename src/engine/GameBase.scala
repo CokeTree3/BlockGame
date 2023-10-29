@@ -20,8 +20,9 @@ class GameBase   extends PApplet {
       "Quit" -> Rectangle(Coordinate(screenArea.centerX + 5, screenArea.heightThirds(2) + 120), 115, 40))
 
     val settingsButtons = Map[String, Rectangle](
-      "Reset Score" -> Rectangle(Coordinate(screenArea.left + 60, screenArea.top + 100), 200, 40),
-      "Colour Theme" -> Rectangle(Coordinate(screenArea.left + 60, screenArea.top + 170), 200, 40),
+      "Colour Theme" -> Rectangle(Coordinate(screenArea.left + 60, screenArea.top + 100), 200, 40),
+      "Reset Score" -> Rectangle(Coordinate(screenArea.left + 60, screenArea.top + 170), 200, 40),
+      "Reload Level" -> Rectangle(Coordinate(screenArea.left + 60, screenArea.top + 240), 200, 40),
       "X" -> Rectangle(Coordinate(screenArea.right - 95, screenArea.top + 60), 35))
 
     val gameButtons = Map[String, Rectangle](
@@ -37,6 +38,7 @@ class GameBase   extends PApplet {
       case 1 => gameButtons
       case 2 => settingsButtons
       case 3 => gameOverButtons
+      case 4 => gameButtons
     }
   }
 

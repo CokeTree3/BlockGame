@@ -4,10 +4,9 @@ import engine.random.{RandomGenerator, ScalaRandomGen}
 import tetris.logic.GameLogic._
 
 
-class GameLogic(val randomGen: RandomGenerator) {
+class GameLogic(val randomGen: RandomGenerator, val customField: Seq[Seq[CellType]]) {
   val gridDims: Dimensions = Dimensions(width = DefaultWidth, height = DefaultHeight)
-  private var gameState: GameState = GameState(generateBlock())
-
+  private var gameState: GameState = GameState(customField, generateBlock())
   var isGameOver: Boolean = false
 
   def getCellType(p : Point): CellType = gameState.getCell(p)
@@ -43,7 +42,7 @@ class GameLogic(val randomGen: RandomGenerator) {
 
   def getScore: String = gameState.score.toString
   def resetGame(): Unit = {
-    gameState = GameState(generateBlock())
+    gameState = GameState(customField, generateBlock())
     isGameOver = false
   }
 
@@ -97,14 +96,16 @@ object GameLogic {
 
   val DrawSizeFactor = 2.0
 
-  private def makeEmptyBoard(gridDims : Dimensions): Seq[Seq[CellType]] = {
-    val emptyLine = Seq.fill(gridDims.width)(Empty())
-    Seq.fill(gridDims.height)(emptyLine)
+  private def makeEmptyBoard(): Seq[Seq[CellType]] = {
+    val emptyLine = Seq.fill(DefaultWidth)(Empty())
+    Seq.fill(DefaultHeight)(emptyLine)
   }
 
   private val DefaultWidth: Int = 9
   private val DefaultHeight: Int = 9
 
-  def apply():GameLogic = new GameLogic(new ScalaRandomGen() )
+  def apply():GameLogic = new GameLogic(new ScalaRandomGen(), makeEmptyBoard())
+
+  def apply(customBoard: Seq[Seq[CellType]]): GameLogic = new GameLogic(new ScalaRandomGen(), customBoard)
 
 }
