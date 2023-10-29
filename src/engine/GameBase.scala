@@ -1,6 +1,6 @@
 package engine
 
-import engine.graphics.{Color, Coordinate, Rectangle, ColorTheme}
+import engine.graphics._
 import processing.core.{PApplet, PConstants, PImage}
 
 class GameBase   extends PApplet {

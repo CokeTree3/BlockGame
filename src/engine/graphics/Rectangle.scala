@@ -1,9 +1,4 @@
-// DO NOT MODIFY FOR BASIC SUBMISSION
-// scalastyle:off
-
 package engine.graphics
-
-import tetris.game.GameMain
 
 case class Rectangle(leftUp: Coordinate, width: Float, height: Float) {
   def top: Float = leftUp.y
@@ -18,10 +13,6 @@ case class Rectangle(leftUp: Coordinate, width: Float, height: Float) {
   def center: Coordinate = Coordinate(centerX, centerY)
   def centerX: Float = leftUp.x + width / 2
   def centerY: Float = leftUp.y + height / 2
-  def centerUp: Coordinate = Coordinate(centerX, top)
-  def centerDown: Coordinate = Coordinate(centerX, bottom)
-  def centerLeft: Coordinate = Coordinate(left, centerY)
-  def centerRight: Coordinate = Coordinate(right, centerY)
 
   def grow(factor : Float) : Rectangle = {
     val newWidth = width * factor

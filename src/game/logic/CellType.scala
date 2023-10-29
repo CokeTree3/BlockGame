@@ -1,4 +1,4 @@
-package tetris.logic
+package game.logic
 
 abstract class CellType(){
   def next: CellType

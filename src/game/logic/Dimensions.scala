@@ -1,4 +1,4 @@
-package tetris.logic
+package game.logic
 
 case class Dimensions(width : Int, height : Int) {
 

@@ -1,15 +1,11 @@
-package tetris.game
+package game
 
-import java.awt.event
-import java.awt.event.KeyEvent._
 import engine.GameBase
 import engine.graphics.{Color, Coordinate, Rectangle}
 import processing.core.{PApplet, PImage}
-import processing._
 import processing.event.{KeyEvent, MouseEvent}
-import tetris.logic._
-import tetris.logic.{Point => GridCoordinate}
-
+import game.logic.{Point => GridCoordinate, _}
+import java.awt.event.KeyEvent._
 import java.io.{File, PrintWriter}
 import scala.io.Source
 import scala.util.Random
@@ -23,7 +19,7 @@ class GameMain extends GameBase {
 
   private var mouseActive = false
   private val stdGameLogic = GameLogic()
-  private var customGameLogic = GameLogic(getRandomLevel(Random.nextInt(3)))
+  private var customGameLogic = GameLogic(getRandomLevel(Random.nextInt(11)))
   private def getGameLogic: GameLogic = if(dispState == 1) stdGameLogic else customGameLogic
 
   private val heightInPixels = 800
@@ -178,7 +174,7 @@ class GameMain extends GameBase {
 
   override def mouseReleased(): Unit = {
     val mousePoint = getMouseCoordinate
-    if(mouseActive && gameField.contains(mousePoint)) getGameLogic.placeBlock(Point(((mouseX - gameField.left) / widthPerCell).toInt, ((mouseY - gameField.top) / heightPerCell).toInt))
+    if(mouseActive && gameField.contains(mousePoint)) getGameLogic.placeBlock(GridCoordinate(((mouseX - gameField.left) / widthPerCell).toInt, ((mouseY - gameField.top) / heightPerCell).toInt))
     mouseActive = false
   }
 
@@ -228,6 +224,6 @@ class GameMain extends GameBase {
 object GameMain {
 
   def main(args:Array[String]): Unit = {
-    PApplet.main("tetris.game.GameMain")
+    PApplet.main("game.GameMain")
   }
 }

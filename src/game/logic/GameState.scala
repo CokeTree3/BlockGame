@@ -1,4 +1,4 @@
-package tetris.logic
+package game.logic
 
 case class GameState(gameBoard: Seq[Seq[CellType]], b: Block, score:Int) {
 
@@ -20,9 +20,6 @@ case class GameState(gameBoard: Seq[Seq[CellType]], b: Block, score:Int) {
 
   def updateScore(change: Int): GameState = GameState(this.gameBoard, this.b, this.score + change)
 
-  def changeCell(cellPoint: Point, cell:CellType): Seq[Seq[CellType]] = {
-    gameBoard.updated(cellPoint.y, gameBoard(cellPoint.y).updated(cellPoint.x, cell))
-  }
 }
 
 object GameState {
