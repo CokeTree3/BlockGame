@@ -22,4 +22,8 @@ More extras include:
 * A global best score is stored and preserved and updated if a higher result is achieved.
 * The settings menu allows for the global high score to be reset as well as loading a different custom level.
 * Multiple colour themes changable in the settings menu.
+
+## Demo
+
+* Link to game demo video: [Demo for the A Yet To Be Named Block Game](https://youtu.be/JpUuyWMYQ6Y)
   
